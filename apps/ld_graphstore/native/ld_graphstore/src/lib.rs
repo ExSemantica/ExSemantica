@@ -15,7 +15,10 @@
 use core::arch::x86_64::*;
 use rustler::{Encoder, Env, Error, NifStruct, ResourceArc, Term};
 use std::collections::HashMap;
-use std::sync::RwLock;
+use std::num::Wrapping;
+use std::sync::mpsc::*;
+use std::sync::{Arc, Barrier, RwLock, Weak};
+use std::thread;
 
 static IGNORE: u64 = 0x0000_0000_0000_0000;
 static ROOTID: u64 = 0x0000_0000_0000_0001;
@@ -31,22 +34,52 @@ mod atoms {
     }
 }
 
+enum TreeLockstepCommandEnum {
+    // Get an object in all trees
+    Get,
+    // Put an object in all trees
+    Put,
+    // Delete an object in all trees
+    Del,
+    // Garbage collect all trees
+    Gc,
+}
+
+#[derive(Clone)]
 struct Tree {
     hint_idx: u64,
     children: HashMap<u64, __m256i>,
 }
 
-struct TreeResource {
-    rw: RwLock<Tree>,
-}
-
 #[derive(NifStruct)]
-#[module = "LdGraphstore.Native.TreeNode"]
-struct TreeNode {
+#[module = "LdGraphstore.Native.QueryResponse"]
+struct QueryResponse {
     parent: Option<u64>,
     child: Option<u64>,
     sibling: Option<u64>,
     this: u64,
+    ticket: u64,
+}
+
+struct TreeLockstepCommand {
+    etype: TreeLockstepCommandEnum,
+    edata: u64,
+    ticket: u64,
+}
+
+#[derive(Clone)]
+struct TreeLockstep {
+    fifo: Sender<QueryResponse>,
+    tree: Tree,
+}
+
+struct TreeResource {
+    lockstep: Vec<TreeLockstep>,
+    receiver: Receiver<QueryResponse>,
+
+    command: RwLock<Vec<Arc<TreeLockstepCommand>>>,
+
+    ticket: Wrapping<u64>,
 }
 
 impl Tree {
@@ -235,15 +268,109 @@ impl Tree {
     }
 }
 
+impl TreeLockstep {
+    fn new(fifo: &Sender<QueryResponse>) -> TreeLockstep {
+        TreeLockstep {
+            fifo: fifo.clone(),
+            tree: unsafe { Tree::new() },
+        }
+    }
+    fn step(&self, command: &Arc<TreeLockstepCommand>) {
+        match command.etype {
+            TreeLockstepCommandEnum::Get => {
+                if self.tree.children.contains_key(&command.edata) {
+                    let item = self.tree.children[&command.edata];
+                    if IGNORE != unsafe { Tree::get_self(self.tree.children[&command.edata]) } {
+                        let unpacked = Tree::unpacked_values(self.tree.children[&command.edata]);
+                        self.fifo.send(QueryResponse {
+                            ticket: command.ticket,
+                            this: unpacked[0],
+                            child: Some(unpacked[2]),
+                            sibling: Some(unpacked[1]),
+                            parent: Some(unpacked[3]),
+                        });
+                        return;
+                    }
+                }
+                self.fifo.send(QueryResponse {
+                    ticket: command.ticket,
+                    this: IGNORE,
+                    child: None,
+                    sibling: None,
+                    parent: None,
+                });
+            }
+            TreeLockstepCommandEnum::Put => {
+                if self.tree.children.contains_key(&command.edata) {
+                    let item = self.tree.children[&command.edata];
+                    if 0_u64 != unsafe { Tree::get_self(self.tree.children[&command.edata]) } {
+                        let constructed = self.tree.construct(command.edata);
+                        let unpacked = Tree::unpacked_values(self.tree.children[&constructed]);
+                        self.fifo.send(QueryResponse {
+                            ticket: command.ticket,
+                            this: unpacked[0],
+                            child: Some(unpacked[2]),
+                            sibling: Some(unpacked[1]),
+                            parent: Some(unpacked[3]),
+                        });
+                        return;
+                    }
+                }
+                self.fifo.send(QueryResponse {
+                    ticket: command.ticket,
+                    this: IGNORE,
+                    child: None,
+                    sibling: None,
+                    parent: None,
+                });
+            }
+            TreeLockstepCommandEnum::Del => {
+                if self.tree.children.contains_key(&command.edata) {
+                    let item = self.tree.children[&command.edata];
+                    if 0_u64 != unsafe { Tree::get_self(self.tree.children[&command.edata]) } {
+                        self.tree.remove(command.edata);
+                        self.fifo.send(QueryResponse {
+                            ticket: command.ticket,
+                            this: IGNORE,
+                            child: None,
+                            sibling: None,
+                            parent: None,
+                        });
+                        return;
+                    }
+                }
+                self.fifo.send(QueryResponse {
+                    ticket: command.ticket,
+                    this: IGNORE,
+                    child: None,
+                    sibling: None,
+                    parent: None,
+                });
+            }
+            TreeLockstepCommandEnum::Gc => {
+                self.tree.collect();
+                self.fifo.send(QueryResponse {
+                    ticket: command.ticket,
+                    this: IGNORE,
+                    child: None,
+                    sibling: None,
+                    parent: None,
+                });
+            }
+        }
+    }
+}
+
 rustler::rustler_export_nifs! {
     "Elixir.LdGraphstore.Native",
     [
-        ("db_create", 0, db_create),
-        ("db_gc", 1, db_gc),
+        ("dbasync_gc", 1, dbasync_gc),
+        ("dbasync_get", 2, dbasync_get),
+        ("dbasync_put", 2, dbasync_put),
+        ("dbasync_del", 2, dbasync_del),
+        ("dbasync_tick", 1, dbasync_tick),
+        ("db_create", 1, db_create),
         ("db_test", 1, db_test),
-        ("db_get", 2, db_get),
-        ("db_put", 2, db_put),
-        ("db_del", 2, db_del),
     ],
     Some(on_load)
 }
@@ -253,92 +380,119 @@ fn on_load(env: Env, _info: Term) -> bool {
     true
 }
 
-fn db_create<'a>(env: Env<'a>, _args: &[Term<'a>]) -> Result<Term<'a>, Error> {
-    let resource = unsafe {
-        ResourceArc::new(TreeResource {
-            rw: RwLock::new(Tree::new()),
-        })
-    };
+fn db_create<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+    let lockstep: usize = args[0].decode()?;
+
+    let (tx, rx) = channel();
+    let command = RwLock::new(vec![]);
+
+    let resource = ResourceArc::new(TreeResource {
+        lockstep: vec![TreeLockstep::new(&tx); lockstep],
+        receiver: rx,
+        command: command,
+        ticket: Wrapping(0_u64),
+    });
+
     Ok((atoms::ok(), resource).encode(env))
 }
-
-fn db_gc<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+// ============================================================================
+//  You can not do message passing in NIFs. You can, however, be asynchronous.
+// ============================================================================
+fn dbasync_tick<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
     let resource: ResourceArc<TreeResource> = args[0].decode()?;
-    unsafe {
-        resource
-            .rw
-            .write()
-            .expect("can't lock for writing")
-            .collect()
-    };
+    {
+        let queue = resource.command.write().expect("Can't get Write Access");
+        if let Some(command) = queue.pop() {
+            let command = Arc::new(command);
+            for thread in resource.lockstep {
+                thread::spawn(move || thread.step(&command));
+            }
+        }
+    }
     Ok((atoms::ok()).encode(env))
 }
 
-fn db_get<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+fn dbasync_recv<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
     let resource: ResourceArc<TreeResource> = args[0].decode()?;
-    let item = resource.rw.read().expect("can't lock for reading");
-    let idx: u64 = args[1].decode()?;
-    let exists = {
-        if item.children.contains_key(&idx) {
-            0_u64 != unsafe { Tree::get_self(item.children[&idx]) }
-        } else {
-            false
+    Ok((atoms::ok(), {
+        let responses = vec![];
+        for response in resource.receiver.try_iter() {
+            responses.push(response)
         }
-    };
-    if exists {
-        let vals = unsafe { Tree::unpacked_values(item.children[&idx]) };
-        Ok((
-            atoms::ok(),
-            TreeNode {
-                parent: Tree::wrap(vals[3]),
-                child: Tree::wrap(vals[2]),
-                sibling: Tree::wrap(vals[1]),
-                this: vals[0],
-            },
-        )
-            .encode(env))
-    } else {
-        Ok((atoms::error(), atoms::noval()).encode(env))
-    }
+        responses
+    })
+        .encode(env))
 }
 
-fn db_put<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+fn dbasync_gc<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
     let resource: ResourceArc<TreeResource> = args[0].decode()?;
-    let mut item = resource.rw.write().expect("can't lock for writing");
-    let idx: u64 = args[1].decode()?;
-    let exists = {
-        if item.children.contains_key(&idx) {
-            0_u64 != unsafe { Tree::get_self(item.children[&idx]) }
-        } else {
-            false
-        }
-    };
-    if exists {
-        let child_idx: u64 = unsafe { item.construct(idx) };
-        Ok((atoms::ok(), child_idx).encode(env))
-    } else {
-        Ok((atoms::error(), atoms::noval()).encode(env))
-    }
+    Ok((atoms::ok(), {
+        let ticket = resource.ticket.0;
+        let queue = resource.command.write().expect("Can't get Write Access");
+        let arc = Arc::new(TreeLockstepCommand {
+            etype: TreeLockstepCommandEnum::Gc,
+            edata: IGNORE,
+            ticket: ticket,
+        });
+        queue.push(arc);
+        resource.ticket += Wrapping(1_u64);
+        ticket
+    })
+        .encode(env))
 }
 
-fn db_del<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+fn dbasync_get<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
     let resource: ResourceArc<TreeResource> = args[0].decode()?;
-    let mut item = resource.rw.write().expect("can't lock for writing");
     let idx: u64 = args[1].decode()?;
+    Ok((atoms::ok(), {
+        let ticket = resource.ticket.0;
+        let queue = resource.command.write().expect("Can't get Write Access");
+        let arc = Arc::new(TreeLockstepCommand {
+            etype: TreeLockstepCommandEnum::Get,
+            edata: idx,
+            ticket: ticket,
+        });
+        queue.push(arc);
+        resource.ticket += Wrapping(1_u64);
+        ticket
+    })
+        .encode(env))
+}
 
-    let exists = {
-        if item.children.contains_key(&idx) {
-            0_u64 != unsafe { Tree::get_self(item.children[&idx]) }
-        } else {
-            false
-        }
-    };
-    if exists {
-        unsafe { item.remove(idx) };
-        Ok(atoms::ok().encode(env))
-    } else {
-        Ok((atoms::error(), atoms::noval()).encode(env))
-    }
+fn dbasync_put<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+    let resource: ResourceArc<TreeResource> = args[0].decode()?;
+    let idx: u64 = args[1].decode()?;
+    Ok((atoms::ok(), {
+        let ticket = resource.ticket.0;
+        let queue = resource.command.write().expect("Can't get Write Access");
+        let arc = Arc::new(TreeLockstepCommand {
+            etype: TreeLockstepCommandEnum::Put,
+            edata: idx,
+            ticket: ticket,
+        });
+        queue.push(arc);
+        resource.ticket += Wrapping(1_u64);
+        ticket
+    })
+        .encode(env))
+}
+
+fn dbasync_del<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
+    let resource: ResourceArc<TreeResource> = args[0].decode()?;
+    let idx: u64 = args[1].decode()?;
+    Ok((atoms::ok(), {
+        let ticket = resource.ticket.0;
+        let queue = resource.command.write().expect("Can't get Write Access");
+        let arc = Arc::new(TreeLockstepCommand {
+            etype: TreeLockstepCommandEnum::Del,
+            edata: idx,
+            ticket: ticket,
+        });
+        queue.push(arc);
+        resource.ticket += Wrapping(1_u64);
+        ticket
+    })
+        .encode(env))
 }
 
 fn db_test<'a>(env: Env<'a>, args: &[Term<'a>]) -> Result<Term<'a>, Error> {
