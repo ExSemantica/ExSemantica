@@ -16,10 +16,10 @@ defmodule Exsemantica.Application do
       Exsemantica.CDate,
       case :file.consult(cdate_path) do
         {:ok, [cdate]} ->
-          cdate
+          cdate |> DateTime.from_unix!()
 
         _ ->
-          cdate = DateTime.utc_now()
+          cdate = DateTime.utc_now() |> DateTime.to_unix()
           File.write(cdate_path, :io_lib.format("~p.~n", [Term]))
           cdate
       end
@@ -55,7 +55,7 @@ defmodule Exsemantica.Application do
            users: ~w(node timestamp handle privmask)a,
            posts: ~w(node timestamp handle title content posted_by)a,
            interests: ~w(node timestamp handle title content related_to)a,
-           auth: ~w(handle secret token)a,
+           auth: ~w(handle secret token bounce)a,
            counters: ~w(type count)a
          },
          caches: %{

@@ -45,22 +45,31 @@ defmodule ExsemanticaWeb.APIv0.Login do
   end
 
   def post_authentication(conn, _opts) do
-    case Exsemnesia.Utils.login_user(conn.body_params["user"], conn.body_params["pass"]) do
-      {:ok, login_user} ->
+    case Exsemnesia.Auth.login(conn.body_params["user"], conn.body_params["pass"]) do
+      {:ok, token} ->
         {:ok, json} =
           Jason.encode(%{
             success: true,
             # The handle of the user.
-            handle: login_user.handle
+            handle: token.handle
           })
 
         conn
         |> fetch_session()
-        |> put_session(:exsemantica_handle,  login_user.handle)
-        |> put_session(:exsemantica_token,  login_user.token)
+        |> put_session(:exsemantica_session2, Phoenix.Token.sign(conn, "user token", token))
         |> send_resp(200, json)
 
-      {:error, :einval} ->
+      {:error, :rate} ->
+        {:ok, json} =
+          Jason.encode(%{
+            success: false,
+            error_code: "E_RATE_LIMIT",
+            description: "You are being rate limited."
+          })
+
+        conn |> send_resp(429, json)
+
+      {:error, :invalid} ->
         {:ok, json} =
           Jason.encode(%{
             success: false,
@@ -70,22 +79,22 @@ defmodule ExsemanticaWeb.APIv0.Login do
 
         conn |> send_resp(400, json)
 
-      {:error, :eacces} ->
+      {:error, :auth} ->
         {:ok, json} =
           Jason.encode(%{
             success: false,
-            error_code: "E_ACCESS_DENIED",
+            error_code: "E_AUTHENTICATION",
             description: "Authentication failed."
           })
 
         conn |> send_resp(401, json)
 
-      {:error, :enoent} ->
+      {:error, :no_exist} ->
         {:ok, json} =
           Jason.encode(%{
             success: false,
             error_code: "E_NO_USERNAME",
-            description: "The username has to be specified."
+            description: "The username does not exist."
           })
 
         conn |> send_resp(400, json)
