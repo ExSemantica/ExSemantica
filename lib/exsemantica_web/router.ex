@@ -12,23 +12,12 @@ defmodule ExsemanticaWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
-
-    scope "/api/v0", ExsemanticaWeb.APIv0 do
-      get "/login", Login, :get_attributes
-      post "/login", Login, :post_authentication
-      put "/login", Login, :put_registration
-      # resources "/bucket", Bucket, only: [:create, :show, :update, :delete]
-    end
   end
 
   scope "/", ExsemanticaWeb do
     pipe_through :browser
 
-    live_session :exsemantica do
-      live "/", LayoutLive
-      live "/search", SearchLive
-      live "/i/:interest", InterestLive
-    end
+    get "/", PageController, :index
   end
 
   # Other scopes may use custom stacks.
@@ -49,12 +38,7 @@ defmodule ExsemanticaWeb.Router do
     scope "/" do
       pipe_through :browser
 
-      live_dashboard "/dashboard",
-        metrics: ExsemanticaWeb.Telemetry,
-        additional_pages: [
-          exsem_users: ExsemanticaWeb.AdminPanel.Users,
-          exsem_invite: ExsemanticaWeb.AdminPanel.InviteCode
-        ]
+      live_dashboard "/dashboard", metrics: ExsemanticaWeb.Telemetry
     end
   end
 

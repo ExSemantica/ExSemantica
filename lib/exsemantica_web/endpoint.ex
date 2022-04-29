@@ -7,17 +7,10 @@ defmodule ExsemanticaWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_exsemantica_key",
-    signing_salt: "iEMYWBRd"
+    signing_salt: "Glwx61LA"
   ]
 
-  socket "/live", Phoenix.LiveView.Socket,
-    websocket: [connect_info: [session: @session_options]],
-    longpoll: false
-
-    socket "/socket", ExsemanticaWeb.UserSocket,
-    websocket: true,
-    longpoll: false
-
+  socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -35,6 +28,7 @@ defmodule ExsemanticaWeb.Endpoint do
     socket "/phoenix/live_reload/socket", Phoenix.LiveReloader.Socket
     plug Phoenix.LiveReloader
     plug Phoenix.CodeReloader
+    plug Phoenix.Ecto.CheckRepoStatus, otp_app: :exsemantica
   end
 
   plug Phoenix.LiveDashboard.RequestLogger,

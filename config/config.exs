@@ -7,16 +7,15 @@
 # General application configuration
 import Config
 
+config :exsemantica,
+  ecto_repos: [Exsemantica.Repo]
+
 # Configures the endpoint
 config :exsemantica, ExsemanticaWeb.Endpoint,
   url: [host: "localhost"],
   render_errors: [view: ExsemanticaWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Exsemantica.PubSub,
-  live_view: [signing_salt: "DVIwt9//"]
-
-config :exsemantica, ExsemanticaWeb.EndpointApi,
-  url: [host: "localhost"],
-  pubsub_server: Exsemantica.PubSub
+  live_view: [signing_salt: "WlpSrf6w"]
 
 # Configures the mailer
 #
@@ -32,23 +31,12 @@ config :swoosh, :api_client, false
 
 # Configure esbuild (the version is required)
 config :esbuild,
-  version: "0.14.24",
+  version: "0.14.29",
   default: [
     args:
       ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
-  ]
-
-config :tailwind,
-  version: "3.0.23",
-  default: [
-    args: ~w(
-      --config=tailwind.config.js
-      --input=css/app.css
-      --output=../priv/static/assets/app.css
-    ),
-    cd: Path.expand("../assets", __DIR__)
   ]
 
 # Configures Elixir's Logger

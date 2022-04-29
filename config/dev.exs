@@ -1,5 +1,15 @@
 import Config
 
+# Configure your database
+config :exsemantica, Exsemantica.Repo,
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost",
+  database: "exsemantica_dev",
+  stacktrace: true,
+  show_sensitive_data_on_connection_error: true,
+  pool_size: 10
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
@@ -13,25 +23,12 @@ config :exsemantica, ExsemanticaWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "ClsDxuvE3wuXcb01wsYeKagsF15cZbY1FbtT/A4pgO0laLV36dO+VlmZEfhJ8dCh",
+  secret_key_base: "+9aT3WxxVvZWFEfNIX9CwpL0fMlM68Bt5/MNZmDfB4Z4dpWJweKDc9fka0To/lvE",
   watchers: [
     # Start the esbuild watcher by calling Esbuild.install_and_run(:default, args)
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
-    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
   ]
 
-# Exsemantica-special stuff goes here BELOW
-config :exsemantica, commit_sha_result: System.cmd("git", ["rev-parse", "--short", "HEAD"])
-
-config :mnesia,
-  dir: to_charlist(Path.join([Path.dirname(__DIR__), "priv", "Exsemnesia_devel.#{node()}"]))
-
-config :exsemantica, ExsemanticaWeb.EndpointApi,
-  http: [ip: {127, 0, 0, 1}, port: 4007],
-  check_origin: false,
-  code_reloader: false,
-  debug_errors: true
-# Exsemantica-special stuff goes here ABOVE
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed

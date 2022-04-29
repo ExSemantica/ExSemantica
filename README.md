@@ -16,4 +16,7 @@ If you want to fetch packages for frontend, use NodeJS NPM in `assets/` to use A
 $ npm install alpinejs
 ```
 
+You need PostgreSQL for these builds of ExSemantica. You might be able to
+dockerize this.
+
 [eactivitypub]: https://github.com/Chlorophytus/eactivitypub-legacy-0.2

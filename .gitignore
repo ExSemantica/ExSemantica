@@ -32,6 +32,3 @@ exsemantica-*.tar
 npm-debug.log
 /assets/node_modules/
 
-.elixir_ls
-priv/Exsemnesia_*
-priv/Exsemantica_CDATE.erl
