@@ -56,7 +56,10 @@ defmodule ExsemanticaWeb.APIv0.Login do
 
         conn
         |> fetch_session()
-        |> put_session(:exsemantica_session2, Phoenix.Token.sign(conn, "user token", token))
+        |> put_session(
+          :exsemantica_apitoken,
+          Phoenix.Token.sign(ExsemanticaWeb.EndpointApi, "user token", token)
+        )
         |> send_resp(200, json)
 
       {:error, :rate} ->
@@ -94,7 +97,7 @@ defmodule ExsemanticaWeb.APIv0.Login do
           Jason.encode(%{
             success: false,
             error_code: "E_NO_USERNAME",
-            description: "The username does not exist."
+            description: "The account with that handle does not exist, or it isn't activated."
           })
 
         conn |> send_resp(400, json)

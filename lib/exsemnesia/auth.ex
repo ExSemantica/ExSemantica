@@ -11,6 +11,53 @@ defmodule Exsemnesia.Auth do
   # Token expires after this amount in seconds
   @expires_after 3600
 
+  def get_backoff do
+    @back_off
+  end
+
+  @doc """
+  Rotates an invite code for registering a new user
+  """
+  def rotate_invite_code do
+    :persistent_term.put(
+      Exsemantica.InviteCode,
+      :crypto.strong_rand_bytes(16) |> Base.url_encode64()
+    )
+  end
+
+  @doc """
+  Registers the user. Sanity checks are performed.
+  """
+  def register(raw_handle, password, invite_code) do
+    # Check for initial validity
+    unless Exsemnesia.Handle128.is_valid(raw_handle) do
+      stored_invite = :persistent_term.get(Exsemantica.InviteCode)
+      # Then check for the serialized result
+      case Exsemnesia.Handle128.serialize(raw_handle) do
+        :error ->
+          # At this branch we have an invalid handle, stop.
+          Logger.debug("handle #{raw_handle} partial INVALID")
+          {:error, :invalid}
+
+        handle when stored_invite === invite_code ->
+          # The handle is for sure valid, we may look for it
+          Logger.debug("handle #{raw_handle} valid, maps to #{handle}, invite code matches")
+          rotate_invite_code()
+          Exsemnesia.Composite.raw_put_user(handle, Argon2.add_hash(password))
+
+        handle ->
+          Logger.debug(
+            "handle #{raw_handle} valid, maps to #{handle}, invite code doesn't match."
+          )
+      end
+    else
+      Logger.debug("handle #{raw_handle} INVALID")
+      {:error, :invalid}
+    end
+  end
+
+  # TODO: Activation call for admins to activate users
+
   @doc """
   Logs in by handle and hashed password. Sanity checks are performed.
   """
@@ -35,7 +82,7 @@ defmodule Exsemnesia.Auth do
 
           # okay now look in our database
           case auth_head.response do
-            # nobody
+            # nobody, or user is inactive
             [] ->
               Logger.debug("handle #{raw_handle} valid, maps to #{downcased}, NONEXISTENT")
               {:error, :no_exist}

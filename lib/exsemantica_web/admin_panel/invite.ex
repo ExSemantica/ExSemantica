@@ -11,7 +11,7 @@ defmodule ExsemanticaWeb.AdminPanel.InviteCode do
   def render_page(_assigns) do
     card(
       title: "Current Invite Code",
-      value: Base.url_encode64(:persistent_term.get(:exseminvite))
+      value: Base.url_encode64(:persistent_term.get(Exsemantica.InviteCode))
     )
   end
 end

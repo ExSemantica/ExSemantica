@@ -109,8 +109,8 @@ defmodule Exsemantica.Application do
       # {Exsemantica.Worker, arg}
     ]
 
-    :persistent_term.put(:exseminvite, :crypto.strong_rand_bytes(24))
-    :persistent_term.put(:exsemprefs, %{registration_enabled: true})
+    Exsemnesia.Auth.rotate_invite_code()
+    :persistent_term.put(Exsemantica.Preferences, %{registration_enabled: true})
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
