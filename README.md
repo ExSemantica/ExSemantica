@@ -19,4 +19,11 @@ $ npm install alpinejs
 You need PostgreSQL for these builds of ExSemantica. You might be able to
 dockerize this.
 
+Test in dev...
+```shell
+$ docker run -e POSTGRES_PASSWORD=postgres --rm -it  -p 5432:5432/tcp postgres:14-alpine
+$ mix ecto.create
+$ mix ecto.migrate
+```
+
 [eactivitypub]: https://github.com/Chlorophytus/eactivitypub-legacy-0.2

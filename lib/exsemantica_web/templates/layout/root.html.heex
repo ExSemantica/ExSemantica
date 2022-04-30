@@ -9,21 +9,11 @@
     <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/app.css")}/>
     <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/app.js")}></script>
   </head>
-  <body>
+  <body class="bg-slate-100">
     <header>
-      <section class="container">
-        <nav>
-          <ul>
-            <li><a href="https://hexdocs.pm/phoenix/overview.html">Get Started</a></li>
-            <%= if function_exported?(Routes, :live_dashboard_path, 2) do %>
-              <li><%= link "LiveDashboard", to: Routes.live_dashboard_path(@conn, :home) %></li>
-            <% end %>
-          </ul>
-        </nav>
-        <a href="https://phoenixframework.org/" class="phx-logo">
-          <img src={Routes.static_path(@conn, "/images/phoenix.png")} alt="Phoenix Framework Logo"/>
-        </a>
-      </section>
+      <nav class="h-16 w-full drop-shadow-lg bg-slate-50">
+        <a href={Routes.static_path(ExsemanticaWeb.Endpoint, "/")}><img class="float-left mt-2 ml-4 line-height-1 max-h-12" src={Routes.static_path(ExsemanticaWeb.Endpoint, "/images/logo.png")} alt="ExSemantica Logo"/></a>
+      </nav>
     </header>
     <%= @inner_content %>
   </body>

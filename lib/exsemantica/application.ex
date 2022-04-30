@@ -7,6 +7,36 @@ defmodule Exsemantica.Application do
 
   @impl true
   def start(_type, _args) do
+    cdate_path = Path.join([Application.app_dir(:exsemantica, "priv"), "Exsemantica_CDATE.erl"])
+
+    # read off Creation Date for IRC standard requirement...ugh
+    :persistent_term.put(
+      Exsemantica.CDate,
+      case :file.consult(cdate_path) do
+        {:ok, [cdate]} ->
+          cdate
+
+        _ ->
+          cdate = DateTime.utc_now()
+          File.write(cdate_path, :io_lib.format("~p.~n", [cdate]))
+          cdate
+      end
+    )
+
+    # then read off the Commit SHA or none at all...
+    :persistent_term.put(
+      Exsemantica.Version,
+      case Application.get_env(:exsemantica, :commit_sha_result) do
+        {sha, 0} ->
+          sha |> String.replace_trailing("\n", "")
+
+          "#{Application.spec(:exsemantica, :vsn)}-#{sha}"
+
+        _ ->
+          Application.spec(:exsemantica, :vsn)
+      end
+    )
+
     children = [
       # Start the Ecto repository
       Exsemantica.Repo,

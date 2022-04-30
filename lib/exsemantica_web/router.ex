@@ -17,7 +17,7 @@ defmodule ExsemanticaWeb.Router do
   scope "/", ExsemanticaWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
+    live "/", IndexLive
     live "/u/:user", UserLive
   end
 
