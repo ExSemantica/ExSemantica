@@ -4,9 +4,9 @@ defmodule Exsemantica.Repo.Migrations.CreatePosts do
   def change do
     create table(:posts) do
       add :timestamp, :utc_datetime
-      add :handle, :binary
-      add :title, :binary
-      add :content, :binary
+      add :handle, :string
+      add :title, :string
+      add :content, :string
       add :posted_by, :integer
 
       timestamps()

@@ -3,7 +3,8 @@ defmodule Exsemantica.Content.User do
   import Ecto.Changeset
 
   schema "users" do
-    field :handle, :binary
+    field :biography, :string
+    field :handle, :string
     field :privmask, :binary
     field :timestamp, :utc_datetime
 
@@ -13,8 +14,8 @@ defmodule Exsemantica.Content.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:timestamp, :handle, :privmask])
-    |> validate_required([:timestamp, :handle, :privmask])
+    |> cast(attrs, [:timestamp, :handle, :privmask, :biography])
+    |> validate_required([:timestamp, :handle, :privmask, :biography])
     |> unique_constraint(:handle)
   end
 end

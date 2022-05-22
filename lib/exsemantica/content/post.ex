@@ -3,11 +3,11 @@ defmodule Exsemantica.Content.Post do
   import Ecto.Changeset
 
   schema "posts" do
-    field :content, :binary
-    field :handle, :binary
+    field :content, :string
+    field :handle, :string
     field :posted_by, :integer
     field :timestamp, :utc_datetime
-    field :title, :binary
+    field :title, :string
 
     timestamps()
   end

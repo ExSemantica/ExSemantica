@@ -3,11 +3,11 @@ defmodule Exsemantica.Content.Interest do
   import Ecto.Changeset
 
   schema "interests" do
-    field :content, :binary
-    field :handle, :binary
+    field :content, :string
+    field :handle, :string
     field :related_to, {:array, :integer}
     field :timestamp, :utc_datetime
-    field :title, :binary
+    field :title, :string
 
     timestamps()
   end

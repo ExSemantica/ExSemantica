@@ -1,6 +1,8 @@
 defmodule ExsemanticaWeb.IndexLive do
   use ExsemanticaWeb, :live_view
 
+  alias ExsemanticaWeb.Types.Handle128
+
   def mount(_params, _session, socket) do
     {:ok, socket |> assign(:trend_search_status, "Please enter your query.")}
   end
@@ -37,6 +39,109 @@ defmodule ExsemanticaWeb.IndexLive do
   def handle_event("query_preflight", unsigned_params, socket) do
     # TODO: Interests can be searched by "#"
     # Users can be searched by "@"
-    {:noreply, socket |> assign(:trend_search_status, "unimplemented")}
+    query = get_in(unsigned_params, ~w(search entry))
+
+    socket =
+      case String.first(query) do
+        "@" ->
+          tail = String.replace_leading(query, "@", "")
+
+          case Handle128.convert(tail) do
+            {:ok, handle} ->
+              socket
+              |> assign(
+                :trend_search_status,
+                "Searching for user @" <> handle <> " returned unimplemented."
+              )
+
+            :error ->
+              socket
+              |> assign(
+                :trend_search_status,
+                "Invalid user search query."
+              )
+          end
+
+        "#" ->
+          tail = String.replace_leading(query, "#", "")
+
+          case Handle128.convert(tail) do
+            {:ok, handle} ->
+              socket
+              |> assign(
+                :trend_search_status,
+                "Searching for interest #" <> handle <> " returned unimplemented."
+              )
+
+            :error ->
+              socket
+              |> assign(
+                :trend_search_status,
+                "Invalid interest search query."
+              )
+          end
+
+        id when not is_nil(id) ->
+          socket
+          |> assign(:trend_search_status, "Searching for " <> query <> " returned unimplemented.")
+
+        nil ->
+          socket
+          |> assign(:trend_search_status, "Please enter your query.")
+      end
+
+    {:noreply, socket}
+  end
+
+  def handle_event("query_submit", unsigned_params, socket) do
+    # TODO: Interests can be searched by "#"
+    # Users can be searched by "@"
+
+    query = get_in(unsigned_params, ~w(search entry))
+
+    socket =
+      case String.first(query) do
+        "@" ->
+          tail = String.replace_leading(query, "@", "")
+
+          case Handle128.convert_nopadding(tail) do
+            {:ok, handle} ->
+              socket |> push_redirect(to: Routes.live_path(socket, ExsemanticaWeb.UserLive, handle))
+
+            :error ->
+              socket
+              |> assign(
+                :trend_search_status,
+                "Invalid user search query."
+              )
+          end
+
+        "#" ->
+          tail = String.replace_leading(query, "#", "")
+
+          case Handle128.convert_nopadding(tail) do
+            {:ok, handle} ->
+              socket |> push_patch(to: Routes.live_path(socket, InterestLive, handle))
+
+
+            :error ->
+              socket
+              |> assign(
+                :trend_search_status,
+                "Invalid interest search query."
+              )
+          end
+
+        id when not is_nil(id) ->
+          socket
+          |> assign(:trend_search_status, "Searching for " <> query <> " returned unimplemented.")
+
+        nil ->
+          socket
+          |> assign(:trend_search_status, "Please enter your query.")
+      end
+
+
+    {:noreply, socket}
   end
 end

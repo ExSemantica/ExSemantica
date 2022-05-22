@@ -4,8 +4,9 @@ defmodule Exsemantica.Repo.Migrations.CreateUsers do
   def change do
     create table(:users) do
       add :timestamp, :utc_datetime
-      add :handle, :binary
+      add :handle, :string
       add :privmask, :binary
+      add :biography, :string
 
       timestamps()
     end

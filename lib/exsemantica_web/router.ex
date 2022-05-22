@@ -19,6 +19,7 @@ defmodule ExsemanticaWeb.Router do
 
     live "/", IndexLive
     live "/u/:user", UserLive
+    live "/i/:interest", InterestLive
   end
 
   # Other scopes may use custom stacks.

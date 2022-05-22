@@ -4,10 +4,10 @@ defmodule Exsemantica.Repo.Migrations.CreateInterests do
   def change do
     create table(:interests) do
       add :timestamp, :utc_datetime
-      add :handle, :binary
-      add :title, :binary
-      add :content, :binary
-      add :related_to, {:array, :integer}
+      add :handle, :string
+      add :title, :string
+      add :content, :string
+      add :posted_by, :integer
 
       timestamps()
     end

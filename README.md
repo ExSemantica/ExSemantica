@@ -26,4 +26,9 @@ $ mix ecto.create
 $ mix ecto.migrate
 ```
 
+Create a user from iex shell
+```
+iex> Exsemantica.Repo.insert(%Exsemantica.Content.User{biography: "Hello Me", handle: "TestUser", privmask: <<0::128>>, timestamp: DateTime.utc_now |> DateTime.truncate(:second)})
+```
+
 [eactivitypub]: https://github.com/Chlorophytus/eactivitypub-legacy-0.2
