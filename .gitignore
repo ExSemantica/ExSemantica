@@ -33,3 +33,4 @@ npm-debug.log
 /assets/node_modules/
 
 Exsemantica_CDATE.erl
+.env
