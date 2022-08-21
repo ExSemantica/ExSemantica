@@ -1,34 +1,21 @@
-# exsemantica
+# ExSemantica
 
-Open-source microblogging for people with mutual interests.
+This is the ExSemantica API reference backend endpoint.
 
-## Guidance
+## Installation
 
-Builds upon [the previous eactivitypub][eactivitypub] repository.
-This is a mix of incomplete pieces `v0.7` (a Phoenix 1.5 monolithic codebase) and `v0.8` (using Mnesia).
-Together these make a great concept for a simple, reliable social platform at edge.
-This is what I see and hope in `v0.9`, but failure is okay.
+If [available in Hex](https://hex.pm/docs/publish), the package can be installed
+by adding `exsemantica` to your list of dependencies in `mix.exs`:
 
-## How to use this?
-
-If you want to fetch packages for frontend, use NodeJS NPM in `assets/` to use Alpine.JS
-```shell
-$ npm install alpinejs
+```elixir
+def deps do
+  [
+    {:exsemantica, "~> 0.9.1"}
+  ]
+end
 ```
 
-You need PostgreSQL for these builds of ExSemantica. You might be able to
-dockerize this.
+Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
+and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
+be found at <https://hexdocs.pm/exsemantica>.
 
-Test in dev...
-```shell
-$ docker run -e POSTGRES_PASSWORD=postgres --rm -it  -p 5432:5432/tcp postgres:14-alpine
-$ mix ecto.create
-$ mix ecto.migrate
-```
-
-Create a user from iex shell
-```
-iex> Exsemantica.Repo.insert(%Exsemantica.Content.User{biography: "Hello Me", handle: "TestUser", privmask: <<0::128>>, timestamp: DateTime.utc_now |> DateTime.truncate(:second)})
-```
-
-[eactivitypub]: https://github.com/Chlorophytus/eactivitypub-legacy-0.2
