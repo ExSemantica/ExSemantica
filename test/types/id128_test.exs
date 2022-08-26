@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-defmodule ExSemanticaTest.Types.Id128 do
+defmodule ExSemantica.Types.Id128.Test do
   use ExUnit.Case
   doctest ExSemantica.Types.Id128
 end

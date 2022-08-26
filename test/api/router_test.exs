@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-defmodule ExSemanticaTest.Api.Router do
+defmodule ExSemantica.Api.Router.Test do
   use ExUnit.Case
   use Plug.Test
   doctest ExSemantica.Api.Router
@@ -26,7 +26,7 @@ defmodule ExSemanticaTest.Api.Router do
     assert conn.resp_body == ExSemantica.Api.Router.cached_ping()
   end
 
-  test "catchall query returns indication of invalid response" do
+  test "catchall check returns indication of invalid response" do
     conn = conn(:get, "/invalid")
     conn = conn |> ExSemantica.Api.Router.call(@opts)
 

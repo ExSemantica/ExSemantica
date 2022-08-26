@@ -11,7 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-defmodule ExSemantica.Types.Handle128.Test do
+defmodule ExSemantica.Database.Graph.Test do
   use ExUnit.Case
-  doctest ExSemantica.Types.Handle128
+  doctest ExSemantica.Database.Graph
+
+  test "puts and gets a vertex" do
+    {:ok, _} =
+      start_supervised({ExSemantica.Database.Graph, ExSemantica.Database.Graph.new_blank_graph()})
+
+    ExSemantica.Database.Graph.put_vertex(42, :add, 43)
+    [43] = ExSemantica.Database.Graph.get_vertex(42)
+    ExSemantica.Database.Graph.put_vertex(42, :del, 43)
+    [] = ExSemantica.Database.Graph.get_vertex(42)
+
+    :ok = stop_supervised(ExSemantica.Database.Graph)
+  end
 end
