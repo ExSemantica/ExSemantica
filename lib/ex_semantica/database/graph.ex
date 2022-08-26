@@ -23,9 +23,13 @@ defmodule ExSemantica.Database.Graph do
 
   @all_ones bnot(bsl(1, 128))
 
-  @spec start_link(map) :: {:error, any} | {:ok, pid}
-  def start_link(graph_data) when map_size(graph_data) === 128 do
-    Agent.start_link(fn -> graph_data end, name: __MODULE__)
+  @spec start_link(list) :: {:error, any} | {:ok, pid}
+  def start_link([graph_data, name: name]) when map_size(graph_data) === 128 do
+    Agent.start_link(fn -> graph_data end, name: name)
+  end
+
+  def start_link([graph_data]) when map_size(graph_data) === 128 do
+    Agent.start_link(fn -> graph_data end)
   end
 
   @spec new_blank_graph :: map
@@ -36,26 +40,26 @@ defmodule ExSemantica.Database.Graph do
     0..127 |> Map.new(fn num -> {num, 0} end)
   end
 
-  @spec get_vertex(any) :: [non_neg_integer]
+  @spec get_vertex(atom | pid | {atom, any} | {:via, atom, any}, any) :: [non_neg_integer]
   @doc """
   Gets a vertex's neighbors from the graph.
   """
-  def get_vertex(vertex) do
-    Agent.get(__MODULE__, & &1)
+  def get_vertex(name, vertex) do
+    Agent.get(name, & &1)
     |> get_in([vertex])
     |> extract_connections()
   end
 
-  @spec put_vertex(any, :add | :del, any) :: :ok
+  @spec put_vertex(atom | pid | {atom, any} | {:via, atom, any}, any, :add | :del, any) :: :ok
   @doc """
   Modifies a vertex's neighbors in the graph.
 
   - `:add`: Adds the vertex association
   - `:del`: Deletes the vertex association
   """
-  def put_vertex(vertex, :add, neighbor) do
+  def put_vertex(name, vertex, :add, neighbor) do
     Agent.update(
-      __MODULE__,
+      name,
       fn graph_data ->
         graph_data
         |> update_in([vertex], fn modifiable -> modifiable |> bor(bsl(1, neighbor)) end)
@@ -63,9 +67,9 @@ defmodule ExSemantica.Database.Graph do
     )
   end
 
-  def put_vertex(vertex, :del, neighbor) do
+  def put_vertex(name, vertex, :del, neighbor) do
     Agent.update(
-      __MODULE__,
+      name,
       fn graph_data ->
         graph_data
         |> update_in([vertex], fn modifiable ->
@@ -77,12 +81,11 @@ defmodule ExSemantica.Database.Graph do
 
   # TODO: Multiple vertices should be updated in one function
 
-  @spec dump_graph :: map
   @doc """
   Dumps the graph's data as a map.
   """
-  def dump_graph do
-    Agent.get(__MODULE__, & &1)
+  def dump_graph(name) do
+    Agent.get(name, & &1)
   end
 
   defp extract_connections(_extractable, extracted, 128), do: extracted

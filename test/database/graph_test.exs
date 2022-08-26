@@ -15,15 +15,15 @@ defmodule ExSemantica.Database.Graph.Test do
   use ExUnit.Case
   doctest ExSemantica.Database.Graph
 
-  test "puts and gets a vertex" do
-    {:ok, _} =
-      start_supervised({ExSemantica.Database.Graph, ExSemantica.Database.Graph.new_blank_graph()})
+  setup do
+    {:ok, graph} = ExSemantica.Database.Graph.start_link([ExSemantica.Database.Graph.new_blank_graph()])
+    {:ok, %{graph: graph}}
+  end
 
-    ExSemantica.Database.Graph.put_vertex(42, :add, 43)
-    [43] = ExSemantica.Database.Graph.get_vertex(42)
-    ExSemantica.Database.Graph.put_vertex(42, :del, 43)
-    [] = ExSemantica.Database.Graph.get_vertex(42)
-
-    :ok = stop_supervised(ExSemantica.Database.Graph)
+  test "puts and gets a vertex", %{graph: graph} do
+    ExSemantica.Database.Graph.put_vertex(graph, 42, :add, 43)
+    [43] = ExSemantica.Database.Graph.get_vertex(graph, 42)
+    ExSemantica.Database.Graph.put_vertex(graph, 42, :del, 43)
+    [] = ExSemantica.Database.Graph.get_vertex(graph, 42)
   end
 end
