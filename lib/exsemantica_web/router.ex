@@ -30,7 +30,16 @@ defmodule ExsemanticaWeb.Router do
   scope "/", ExsemanticaWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
+    live_session :default do
+      # Homepage, PubSub-based timeline
+      live "/", HomeLive, :timeline
+
+      # Subcommunities aggregate links
+      live "/s/:subcommunity", SubcommunityLive, :show_aggregated
+
+      # Show a link
+      live "/s/:subcommunity/:link", SubcommunityLive, :show_link
+    end
   end
 
   # Other scopes may use custom stacks.

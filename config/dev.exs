@@ -78,6 +78,8 @@ config :tailwind,
     cd: Path.expand("../assets", __DIR__)
   ]
 
+config :heroicons, :version, "2.0.16"
+
 # Watch static and templates for browser reloading.
 config :exsemantica, ExsemanticaWeb.Endpoint,
   live_reload: [
