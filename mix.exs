@@ -39,10 +39,18 @@ defmodule Exsemantica.MixProject do
       # RATIONALE: HTTP connection handling to the API
       {:plug_cowboy, "~> 2.6"},
 
-      # RATIONALE: handle transliteration of usernames
+      # RATIONALE: The API uses JSON
+      {:jason, "~> 1.4"},
+
+      # RATIONALE: Handle transliteration of usernames
       {:unidecode, "~> 1.0"},
 
-      # RATIONALE: By using these tools the code will be well-formed
+      # RATIONALE: Store into a PostgreSQL database
+      {:ecto, "~> 3.10"},
+      {:ecto_sql, "~> 3.10"},
+      {:postgrex, "~> 0.17.1"},
+
+      # RATIONALE: By using these tools the code can be better-formed
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.29", only: :dev, runtime: false}
       # {:dep_from_hexpm, "~> 0.3.0"},

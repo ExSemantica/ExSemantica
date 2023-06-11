@@ -24,6 +24,8 @@ defmodule Exsemantica.Application do
     children = [
       # Starts a worker by calling: Exsemantica.Worker.start_link(arg)
       # {Exsemantica.Worker, arg}
+      {Plug.Cowboy, scheme: :http, plug: Exsemantica.Router, options: [port: 4000]},
+      Exsemantica.Repo
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
