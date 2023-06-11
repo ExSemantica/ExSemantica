@@ -1,4 +1,4 @@
-# >>> Schema - Comment
+# >>> Tasks: User Info
 # Copyright 2023 Roland Metivier <metivier.roland@chlorophyt.us>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,29 +12,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-defmodule Exsemantica.Repo.Comment do
+defmodule Exsemantica.Tasks.UserInfo do
   @moduledoc """
-  A schema that represents comments inside a post
+  Handles a user structure from SQL
   """
-  use Ecto.Schema
+  import Ecto.Query
 
-  schema "comments" do
-    # A future-proof attributes map of booleans
-    field :attributes, {:map, :boolean}
+  @doc """
+  Reads a user structure by using a name
+  """
+  def async_read(user) do
+    Task.async(fn ->
+      case Exsemantica.Handle128.convert_to(user) do
+        {:ok, name} ->
+          query = from(u in Exsemantica.Repo.User, where: ^name == u.name, select: [:name, :biography])
 
-    # Text
-    field :content, :string
+          {:ok, Exsemantica.Repo.one(query)}
 
-    # Who posted this?
-    belongs_to :user, Exsemantica.Repo.User
-
-    # Where we belong
-    belongs_to :post, Exsemantica.Repo.Post
-
-    # Comment parent/children
-    belongs_to :parent, Exsemantica.Repo.Comment
-    has_many :children, Exsemantica.Repo.Comment
-
-    timestamps()
+        error ->
+          error
+      end
+    end)
   end
 end

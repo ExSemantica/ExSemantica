@@ -9,6 +9,8 @@ defmodule Exsemantica.Repo.Migrations.Initialize do
     # Create a User table =====================================================
     create table(:users) do
       add :name, :string, size: 16
+      add :biography, :string, size: 256
+      add :password_hash, :binary
       add :attributes, :map
 
       timestamps()

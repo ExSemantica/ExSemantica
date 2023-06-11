@@ -13,11 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 defmodule Exsemantica.Repo.User do
+  @moduledoc """
+  A schema that represents users
+  """
+
   use Ecto.Schema
 
   schema "users" do
     # The Handle128 of the user
     field :name, :string
+
+    # The bio of the user
+    field :biography, :string
+
+    # The hashed passphrase of the user
+    field :password_hash, :binary, redact: true
 
     # A future-proof attributes map of booleans
     field :attributes, {:map, :boolean}
@@ -27,5 +37,7 @@ defmodule Exsemantica.Repo.User do
 
     # What are we moderating?
     many_to_many :moderating, Exsemantica.Repo.Community, join_through: "moderators_communities"
+
+    timestamps()
   end
 end

@@ -42,7 +42,6 @@ defmodule Exsemantica.Router do
         ok: false,
         e: :not_implemented,
         detail: "This API endpoint does not exist",
-        info: %{}
       }
     )
   end

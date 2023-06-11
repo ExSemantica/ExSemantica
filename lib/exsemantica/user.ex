@@ -22,32 +22,53 @@ defmodule Exsemantica.User do
   import Exsemantica.JSON, only: [send_json: 2]
 
   def call(conn, _opts) do
+    t0 = DateTime.utc_now()
+
     handle = conn.path_params["handle"]
 
-    # TODO: Add a GenServer to handle all the Ecto logic...
+    task = Exsemantica.Tasks.UserInfo.async_read(handle)
 
-    if Exsemantica.Handle128.valid?(handle) do
-      conn
-      |> send_json(
-        code: 404,
-        json: %{
-          ok: false,
-          e: :not_found,
-          detail: "User does not exist",
-          info: %{user: handle}
-        }
-      )
-    else
-      conn
-      |> send_json(
-        code: 400,
-        json: %{
-          ok: false,
-          e: :bad_request,
-          detail: "Username is not valid",
-          info: %{}
-        }
-      )
+    case task |> Task.await() do
+      {:ok, nil} ->
+        t1 = DateTime.utc_now()
+
+        conn
+        |> send_json(
+          code: 404,
+          json: %{
+            ok: false,
+            e: :not_found,
+            time: DateTime.diff(t1, t0, :millisecond),
+            detail: "User does not exist",
+          }
+        )
+
+      {:ok, user} ->
+        t1 = DateTime.utc_now()
+
+        conn
+        |> send_json(
+          code: 200,
+          json: %{
+            ok: true,
+            time: DateTime.diff(t1, t0, :millisecond),
+            info: %{user: user.name, biography: user.biography}
+          }
+        )
+
+      {:error, _error} ->
+        t1 = DateTime.utc_now()
+
+        conn
+        |> send_json(
+          code: 400,
+          json: %{
+            ok: false,
+            e: :bad_request,
+            time: DateTime.diff(t1, t0, :millisecond),
+            detail: "Username is not valid",
+          }
+        )
     end
   end
 end

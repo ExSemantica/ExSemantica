@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 defmodule Exsemantica.Repo.Community do
+  @moduledoc """
+  A schema that represents communities
+  """
   use Ecto.Schema
 
   schema "communities" do
@@ -30,5 +33,7 @@ defmodule Exsemantica.Repo.Community do
 
     # We have many content posts
     has_many :threads, Exsemantica.Repo.Post
+    
+    timestamps()
   end
 end

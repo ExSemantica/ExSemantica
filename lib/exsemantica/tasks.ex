@@ -1,4 +1,4 @@
-# >>> Schema - Comment
+# >>> Tasks
 # Copyright 2023 Roland Metivier <metivier.roland@chlorophyt.us>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,29 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-defmodule Exsemantica.Repo.Comment do
+defmodule Exsemantica.Tasks do
   @moduledoc """
-  A schema that represents comments inside a post
+  Tasks/utilities for retrieving items from the database
   """
-  use Ecto.Schema
-
-  schema "comments" do
-    # A future-proof attributes map of booleans
-    field :attributes, {:map, :boolean}
-
-    # Text
-    field :content, :string
-
-    # Who posted this?
-    belongs_to :user, Exsemantica.Repo.User
-
-    # Where we belong
-    belongs_to :post, Exsemantica.Repo.Post
-
-    # Comment parent/children
-    belongs_to :parent, Exsemantica.Repo.Comment
-    has_many :children, Exsemantica.Repo.Comment
-
-    timestamps()
-  end
 end

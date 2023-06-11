@@ -50,6 +50,9 @@ defmodule Exsemantica.MixProject do
       {:ecto_sql, "~> 3.10"},
       {:postgrex, "~> 0.17.1"},
 
+      # RATIONALE: Password hashing
+      {:argon2_elixir, "~> 3.1"},
+
       # RATIONALE: By using these tools the code can be better-formed
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.29", only: :dev, runtime: false}
