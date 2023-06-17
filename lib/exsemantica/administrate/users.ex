@@ -13,8 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 defmodule Exsemantica.Administrate.Users do
-  import Ecto.Query
+  @moduledoc """
+  Various functions for manipulating users
+  """
 
+  @doc """
+  Inserts a new regular user
+  """
   def insert(name, password, biography) do
     case Exsemantica.Handle128.convert_to(name) do
       {:ok, handle} ->
@@ -30,43 +35,46 @@ defmodule Exsemantica.Administrate.Users do
     end
   end
 
-  def set_community_moderation(user, community_id, moderator?) do
+  @doc """
+  Sets a user's moderation flag on a community
+
+  `moderator?` is whether the user should be a moderator or not
+  """
+  def set_moderator_for_community(user, community, moderator?) do
     if moderator? do
-      Exsemantica.Repo.insert("moderators_communities", moderator_id: user.id, community_id: community_id)
+      user
+      |> Ecto.Changeset.change()
+      |> Ecto.Changeset.put_assoc(:moderating, community.id)
+      |> Exsemantica.Repo.insert()
     else
-      from("moderators_communities", where: [moderator_id: ^user.id, community_id: ^community_id])
-      |> Exsemantica.Repo.delete_all()
+      user
+      |> Ecto.Changeset.change()
+      |> Ecto.Changeset.get_assoc(:moderating, community.id)
+      |> Exsemantica.Repo.delete() 
     end
   end
 
-  def set_post_vote(user, post_id, upvote: upvote, downvote: downvote) do
-    if upvote and downvote do
-      {:error, :einval}
-    else
-      cond do
-        upvote ->
-          user
-          |> Ecto.Changeset.change()
-          |> Ecto.Changeset.put_assoc(:downvoted_posts, %{downvoter_id: user.id, post_id: post_id})
-          |> Ecto.Changeset.cast_assoc(:downvoted_posts)
+  @doc """
+  Adds or removes a vote on a post acting as a user
 
-          user
-          |> Exsemantica.Repo.preload(:upvoted_posts)
-          |> Ecto.Changeset.cast(%{upvoter_id: user.id, post_id: post_id})
-          |> Ecto.Changeset.cast_assoc(:upvoted_posts)
-        downvote ->
-          from("posts_upvotes", where: [post_id: ^post_id, upvoter_id: ^user.id])
-          |> Exsemantica.Repo.delete_all()
+  `vote_coefficient`: -1 = downvote, 0 = abstain, 1 = upvote
+  """
+  def set_post_vote(user, post, vote_coefficient) do
+    user
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:voted_posts, %{post_id: post.id, vote_coefficient: vote_coefficient})
+    |> Exsemantica.Repo.insert_or_update()
+  end
 
-          Exsemantica.Repo.insert(:posts_downvotes, post_id: post_id, downvoter_id: user.id)
+  @doc """
+  Adds or removes a vote on a comment acting as a user
 
-        true ->
-          from("posts_upvotes", where: [post_id: ^post_id, upvoter_id: ^user.id])
-          |> Exsemantica.Repo.delete_all()
-
-          from("posts_downvotes", where: [post_id: ^post_id, downvoter_id: ^user.id])
-          |> Exsemantica.Repo.delete_all()
-      end
-    end
+  `vote_coefficient`: -1 = downvote, 0 = abstain, 1 = upvote
+  """
+  def set_comment_vote(user, comment, vote_coefficient) do
+    user
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:voted_comments, %{comment_id: comment.id, vote_coefficient: vote_coefficient})
+    |> Exsemantica.Repo.insert_or_update()
   end
 end

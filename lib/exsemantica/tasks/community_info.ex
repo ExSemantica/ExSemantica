@@ -19,22 +19,52 @@ defmodule Exsemantica.Tasks.CommunityInfo do
   import Ecto.Query
 
   @doc """
-  Reads a user structure by using a name
+  Reads a community and some of its posts by using a name
   """
-  def async_read(community, offset, count) do
+  def async_read(community, {offset, count}) do
+    Task.async(fn ->
+      case Exsemantica.Handle128.convert_to(community) do
+        {:ok, name} ->
+          thread_count =
+            from(c in Exsemantica.Repo.Community,
+              join: t in assoc(c, :threads),
+              where: c.name == ^name,
+              preload: [threads: t]
+            )
+            |> Exsemantica.Repo.aggregate(:count)
+
+          c1 = thread_count - offset
+          c0 = c1 + count
+
+          query =
+            from(c in Exsemantica.Repo.Community,
+              left_join: t in assoc(c, :threads),
+              on: t.id >= ^c1 and t.id < ^c0,
+              order_by: [desc: t.id],
+              where: c.name == ^name,
+              preload: [threads: {t, :user}],
+              select: c
+            )
+
+          {:ok, Exsemantica.Repo.one(query)}
+
+        error ->
+          error
+      end
+    end)
+  end
+
+  def async_read(community, nil) do
     Task.async(fn ->
       case Exsemantica.Handle128.convert_to(community) do
         {:ok, name} ->
           query =
             from(c in Exsemantica.Repo.Community,
-              join: t in assoc(c, :threads),
-              order_by: [desc: t.id],
-              where: c.name == ^name and t.id <= ^offset,
-              limit: ^count,
-              preload: [threads: t]
+              where: c.name == ^name,
+              select: [:name, :description]
             )
 
-          {:ok, Exsemantica.Repo.all(query)}
+          {:ok, Exsemantica.Repo.one(query)}
 
         error ->
           error

@@ -34,6 +34,7 @@ defmodule Exsemantica.Repo.Migrations.Initialize do
 
       timestamps()
     end
+
     # Create a Comment table ==================================================
     create table(:comments) do
       add :content, :string, size: 256
@@ -62,29 +63,19 @@ defmodule Exsemantica.Repo.Migrations.Initialize do
       add :community_id, references(:communities)
     end
     create unique_index(:moderators_communities, [:moderator_id, :community_id])
-    # Create a Post-Upvote join ===============================================
-    create table(:posts_upvotes) do
+    # Create a Post-Vote join ===============================================
+    create table(:posts_votes) do
       add :post_id, references(:posts)
-      add :upvoter_id, references(:users)
+      add :voter_id, references(:users)
+      add :vote_coefficient, :integer # upvote, downvote, abstain
     end
-    create unique_index(:posts_upvotes, [:post_id, :upvoter_id])
-    # Create a Post-Downvote join =============================================
-    create table (:posts_downvotes) do
-      add :post_id, references(:posts)
-      add :downvoter_id, references(:users)
-    end
-    create unique_index(:posts_downvotes, [:post_id, :downvoter_id])
-    # Create a Comment-Upvote join ============================================
-    create table(:comments_upvotes) do
+    create unique_index(:posts_votes, [:post_id, :voter_id])
+    # Create a Comment-Vote join ============================================
+    create table(:comments_votes) do
       add :comment_id, references(:comments)
-      add :upvoter_id, references(:users)
+      add :voter_id, references(:users)
+      add :vote_coefficient, :integer # upvote, downvote, abstain
     end
-    create unique_index(:comments_upvotes, [:comment_id, :upvoter_id])
-    # Create a Comment-Downvote join ==========================================
-    create table (:comments_downvotes) do
-      add :comment_id, references(:comments)
-      add :downvoter_id, references(:users)
-    end
-    create unique_index(:comments_downvotes, [:comment_id, :downvoter_id])
+    create unique_index(:comments_votes, [:comment_id, :voter_id])
   end
 end

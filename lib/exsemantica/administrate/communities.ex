@@ -26,4 +26,11 @@ defmodule Exsemantica.Administrate.Communities do
         error
     end
   end
+
+  def post_into(community, user, title, content) do
+    %Exsemantica.Repo.Post{user: user, title: title, content: content}
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:community, community)
+    |> Exsemantica.Repo.insert()
+  end
 end

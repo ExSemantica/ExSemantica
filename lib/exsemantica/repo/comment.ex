@@ -36,8 +36,7 @@ defmodule Exsemantica.Repo.Comment do
     has_many(:children, Exsemantica.Repo.Comment)
 
     # Upvotes and downvotes
-    many_to_many(:upvotes, Exsemantica.Repo.User, join_through: "comments_upvotes")
-    many_to_many(:downvotes, Exsemantica.Repo.User, join_through: "comments_downvotes")
+    many_to_many(:votes, Exsemantica.Repo.User, join_through: "comments_votes")
 
     timestamps()
   end

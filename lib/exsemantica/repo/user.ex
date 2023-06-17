@@ -38,10 +38,8 @@ defmodule Exsemantica.Repo.User do
     # What are we moderating?
     many_to_many(:moderating, Exsemantica.Repo.Community, join_through: "moderators_communities")
 
-    many_to_many(:upvoted_posts, Exsemantica.Repo.Post, join_through: "posts_upvotes")
-    many_to_many(:downvoted_posts, Exsemantica.Repo.Post, join_through: "posts_downvotes")
-    many_to_many(:upvoted_comments, Exsemantica.Repo.Comment, join_through: "comments_upvotes")
-    many_to_many(:downvoted_comments, Exsemantica.Repo.Comment, join_through: "comments_downvotes")
+    many_to_many(:voted_posts, Exsemantica.Repo.Post, join_through: "posts_votes")
+    many_to_many(:voted_comments, Exsemantica.Repo.Comment, join_through: "comments_votes")
 
     timestamps()
   end

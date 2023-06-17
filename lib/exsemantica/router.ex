@@ -34,7 +34,7 @@ defmodule Exsemantica.Router do
   # This is for viewing user information
   forward("/user/:handle", to: Exsemantica.User)
   # This is for viewing community information
-  # forward("/community/:handle", to: Exsemantica.Community)
+  forward("/community/:handle", to: Exsemantica.Community)
 
   # We 501 here, there's nothing this catch-all endpoint can do
   match _ do

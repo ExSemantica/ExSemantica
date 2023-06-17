@@ -29,8 +29,7 @@ defmodule Exsemantica.Repo.Post do
     field(:content, :string)
 
     # Upvotes and downvotes
-    many_to_many(:upvotes, Exsemantica.Repo.User, join_through: "posts_upvotes")
-    many_to_many(:downvotes, Exsemantica.Repo.User, join_through: "posts_downvotes")
+    many_to_many(:votes, Exsemantica.Repo.User, join_through: "posts_votes")
 
     # Who posted this?
     belongs_to(:user, Exsemantica.Repo.User)
