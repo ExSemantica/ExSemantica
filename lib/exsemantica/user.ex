@@ -39,7 +39,7 @@ defmodule Exsemantica.User do
             ok: false,
             e: :not_found,
             time: DateTime.diff(t1, t0, :millisecond),
-            detail: "User does not exist",
+            detail: "User does not exist"
           }
         )
 
@@ -66,7 +66,7 @@ defmodule Exsemantica.User do
             ok: false,
             e: :bad_request,
             time: DateTime.diff(t1, t0, :millisecond),
-            detail: "Username is not valid",
+            detail: "Username is not valid"
           }
         )
     end

@@ -34,7 +34,7 @@ defmodule Exsemantica.JSON do
     |> put_resp_content_type("application/json")
   end
 
-  def send_json(conn, [code: code, json: json]) do
+  def send_json(conn, code: code, json: json) do
     {:ok, text_json} = Jason.encode(json)
 
     conn

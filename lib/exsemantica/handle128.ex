@@ -67,9 +67,11 @@ defmodule Exsemantica.Handle128 do
     first_valid? = is_irc_letter(first) or is_irc_special(first)
 
     # Are the rest valid?
-    rest_valid? = rest |> Enum.all?(fn char ->
-      is_irc_letter(char) or is_irc_special(char) or is_irc_digit(char) or char === ?-
-    end)
+    rest_valid? =
+      rest
+      |> Enum.all?(fn char ->
+        is_irc_letter(char) or is_irc_special(char) or is_irc_digit(char) or char === ?-
+      end)
 
     # Make sure they're both valid
     first_valid? and rest_valid?
@@ -78,4 +80,3 @@ defmodule Exsemantica.Handle128 do
   # Otherwise if `is_valid` catches something too long it's not valid
   def valid?(_item), do: false
 end
-

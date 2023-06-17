@@ -20,20 +20,24 @@ defmodule Exsemantica.Repo.Comment do
 
   schema "comments" do
     # A future-proof attributes map of booleans
-    field :attributes, {:map, :boolean}
+    field(:attributes, {:map, :boolean})
 
     # Text
-    field :content, :string
+    field(:content, :string)
 
     # Who posted this?
-    belongs_to :user, Exsemantica.Repo.User
+    belongs_to(:user, Exsemantica.Repo.User)
 
     # Where we belong
-    belongs_to :post, Exsemantica.Repo.Post
+    belongs_to(:post, Exsemantica.Repo.Post)
 
     # Comment parent/children
-    belongs_to :parent, Exsemantica.Repo.Comment
-    has_many :children, Exsemantica.Repo.Comment
+    belongs_to(:parent, Exsemantica.Repo.Comment)
+    has_many(:children, Exsemantica.Repo.Comment)
+
+    # Upvotes and downvotes
+    many_to_many(:upvotes, Exsemantica.Repo.User, join_through: "comments_upvotes")
+    many_to_many(:downvotes, Exsemantica.Repo.User, join_through: "comments_downvotes")
 
     timestamps()
   end

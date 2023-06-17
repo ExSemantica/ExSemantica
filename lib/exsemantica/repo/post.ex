@@ -20,22 +20,26 @@ defmodule Exsemantica.Repo.Post do
 
   schema "posts" do
     # A future-proof attributes map of booleans
-    field :attributes, {:map, :boolean}
+    field(:attributes, {:map, :boolean})
 
     # Title
-    field :title, :string
+    field(:title, :string)
 
     # Text
-    field :content, :string
+    field(:content, :string)
+
+    # Upvotes and downvotes
+    many_to_many(:upvotes, Exsemantica.Repo.User, join_through: "posts_upvotes")
+    many_to_many(:downvotes, Exsemantica.Repo.User, join_through: "posts_downvotes")
 
     # Who posted this?
-    belongs_to :user, Exsemantica.Repo.User
+    belongs_to(:user, Exsemantica.Repo.User)
 
     # Where was this posted?
-    belongs_to :community, Exsemantica.Repo.Community
+    belongs_to(:community, Exsemantica.Repo.Community)
 
     # We have comments
-    has_many :comments, Exsemantica.Repo.Comment
+    has_many(:comments, Exsemantica.Repo.Comment)
 
     timestamps()
   end

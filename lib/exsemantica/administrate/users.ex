@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 defmodule Exsemantica.Administrate.Users do
+  import Ecto.Query
+
   def insert(name, password, biography) do
     case Exsemantica.Handle128.convert_to(name) do
       {:ok, handle} ->
@@ -25,6 +27,46 @@ defmodule Exsemantica.Administrate.Users do
 
       error ->
         error
+    end
+  end
+
+  def set_community_moderation(user, community_id, moderator?) do
+    if moderator? do
+      Exsemantica.Repo.insert("moderators_communities", moderator_id: user.id, community_id: community_id)
+    else
+      from("moderators_communities", where: [moderator_id: ^user.id, community_id: ^community_id])
+      |> Exsemantica.Repo.delete_all()
+    end
+  end
+
+  def set_post_vote(user, post_id, upvote: upvote, downvote: downvote) do
+    if upvote and downvote do
+      {:error, :einval}
+    else
+      cond do
+        upvote ->
+          user
+          |> Ecto.Changeset.change()
+          |> Ecto.Changeset.put_assoc(:downvoted_posts, %{downvoter_id: user.id, post_id: post_id})
+          |> Ecto.Changeset.cast_assoc(:downvoted_posts)
+
+          user
+          |> Exsemantica.Repo.preload(:upvoted_posts)
+          |> Ecto.Changeset.cast(%{upvoter_id: user.id, post_id: post_id})
+          |> Ecto.Changeset.cast_assoc(:upvoted_posts)
+        downvote ->
+          from("posts_upvotes", where: [post_id: ^post_id, upvoter_id: ^user.id])
+          |> Exsemantica.Repo.delete_all()
+
+          Exsemantica.Repo.insert(:posts_downvotes, post_id: post_id, downvoter_id: user.id)
+
+        true ->
+          from("posts_upvotes", where: [post_id: ^post_id, upvoter_id: ^user.id])
+          |> Exsemantica.Repo.delete_all()
+
+          from("posts_downvotes", where: [post_id: ^post_id, downvoter_id: ^user.id])
+          |> Exsemantica.Repo.delete_all()
+      end
     end
   end
 end

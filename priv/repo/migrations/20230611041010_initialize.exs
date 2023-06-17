@@ -18,6 +18,7 @@ defmodule Exsemantica.Repo.Migrations.Initialize do
     # Create a Community table ================================================
     create table(:communities) do
       add :name, :string, size: 16
+      add :description, :string, size: 256
       add :attributes, :map
 
       timestamps()
@@ -61,5 +62,29 @@ defmodule Exsemantica.Repo.Migrations.Initialize do
       add :community_id, references(:communities)
     end
     create unique_index(:moderators_communities, [:moderator_id, :community_id])
+    # Create a Post-Upvote join ===============================================
+    create table(:posts_upvotes) do
+      add :post_id, references(:posts)
+      add :upvoter_id, references(:users)
+    end
+    create unique_index(:posts_upvotes, [:post_id, :upvoter_id])
+    # Create a Post-Downvote join =============================================
+    create table (:posts_downvotes) do
+      add :post_id, references(:posts)
+      add :downvoter_id, references(:users)
+    end
+    create unique_index(:posts_downvotes, [:post_id, :downvoter_id])
+    # Create a Comment-Upvote join ============================================
+    create table(:comments_upvotes) do
+      add :comment_id, references(:comments)
+      add :upvoter_id, references(:users)
+    end
+    create unique_index(:comments_upvotes, [:comment_id, :upvoter_id])
+    # Create a Comment-Downvote join ==========================================
+    create table (:comments_downvotes) do
+      add :comment_id, references(:comments)
+      add :downvoter_id, references(:users)
+    end
+    create unique_index(:comments_downvotes, [:comment_id, :downvoter_id])
   end
 end

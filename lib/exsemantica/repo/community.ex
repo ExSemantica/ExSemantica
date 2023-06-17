@@ -20,20 +20,23 @@ defmodule Exsemantica.Repo.Community do
 
   schema "communities" do
     # The Handle128 of the community
-    field :name, :string
+    field(:name, :string)
+
+    # A short description of this community
+    field(:description, :string)
 
     # A future-proof attributes map of booleans
-    field :attributes, {:map, :boolean}
+    field(:attributes, {:map, :boolean})
 
     # What subscribers do we have?
-    many_to_many :subscribers, Exsemantica.Repo.User, join_through: "users_subscriptions"
+    many_to_many(:subscribers, Exsemantica.Repo.User, join_through: "users_subscriptions")
 
     # What moderators do we have?
-    many_to_many :moderators, Exsemantica.Repo.User, join_through: "moderators_communities"
+    many_to_many(:moderators, Exsemantica.Repo.User, join_through: "moderators_communities")
 
     # We have many content posts
-    has_many :threads, Exsemantica.Repo.Post
-    
+    has_many(:threads, Exsemantica.Repo.Post)
+
     timestamps()
   end
 end

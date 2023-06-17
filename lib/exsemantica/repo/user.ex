@@ -21,22 +21,27 @@ defmodule Exsemantica.Repo.User do
 
   schema "users" do
     # The Handle128 of the user
-    field :name, :string
+    field(:name, :string)
 
     # The bio of the user
-    field :biography, :string
+    field(:biography, :string)
 
     # The hashed passphrase of the user
-    field :password_hash, :binary, redact: true
+    field(:password_hash, :binary, redact: true)
 
     # A future-proof attributes map of booleans
-    field :attributes, {:map, :boolean}
+    field(:attributes, {:map, :boolean})
 
     # What subscribers do we have?
-    many_to_many :subscriptions, Exsemantica.Repo.Community, join_through: "users_subscriptions"
+    many_to_many(:subscriptions, Exsemantica.Repo.Community, join_through: "users_subscriptions")
 
     # What are we moderating?
-    many_to_many :moderating, Exsemantica.Repo.Community, join_through: "moderators_communities"
+    many_to_many(:moderating, Exsemantica.Repo.Community, join_through: "moderators_communities")
+
+    many_to_many(:upvoted_posts, Exsemantica.Repo.Post, join_through: "posts_upvotes")
+    many_to_many(:downvoted_posts, Exsemantica.Repo.Post, join_through: "posts_downvotes")
+    many_to_many(:upvoted_comments, Exsemantica.Repo.Comment, join_through: "comments_upvotes")
+    many_to_many(:downvoted_comments, Exsemantica.Repo.Comment, join_through: "comments_downvotes")
 
     timestamps()
   end

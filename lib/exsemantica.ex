@@ -14,8 +14,10 @@
 # limitations under the License.
 defmodule Exsemantica do
   @moduledoc """
-  Documentation for `Exsemantica`.
+  ExSemantica is a free and open source link aggregator, coded using Elixir.
 
-  TODO: Document it.
+  This is the backend of the site.
+
+  TODO: Document the API endpoints.
   """
 end

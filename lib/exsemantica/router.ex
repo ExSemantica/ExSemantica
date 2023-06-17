@@ -30,8 +30,11 @@ defmodule Exsemantica.Router do
   plug(:match)
   plug(:dispatch)
 
-  # We forward this, `handle` is a Handle128
+  # We forward these, `handle` is a Handle128
+  # This is for viewing user information
   forward("/user/:handle", to: Exsemantica.User)
+  # This is for viewing community information
+  # forward("/community/:handle", to: Exsemantica.Community)
 
   # We 501 here, there's nothing this catch-all endpoint can do
   match _ do
@@ -41,7 +44,7 @@ defmodule Exsemantica.Router do
       json: %{
         ok: false,
         e: :not_implemented,
-        detail: "This API endpoint does not exist",
+        detail: "This API endpoint does not exist"
       }
     )
   end
