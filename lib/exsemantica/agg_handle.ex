@@ -2,8 +2,7 @@ defmodule Exsemantica.AggHandle do
   @moduledoc """
   An AggHandle is a lowercase ASCII identifier used to identify aggregates.
   """
-
-  defguard is_valid(item) when is_binary(item) and byte_size(item) > 0 and byte_size(item) <= 32
+  require Exsemantica.HandleGuards, as: Guards
 
   @doc """
   Converts a handle into an AggHandle with at most 32 characters.
@@ -18,11 +17,11 @@ defmodule Exsemantica.AggHandle do
          |> Unidecode.decode()
          |> String.trim()
          |> String.replace(" ", "_") do
-      ascii when is_valid(ascii) ->
+      ascii when Guards.is_valid_agg_pre(ascii) ->
         chars_ascii? =
           ascii
           |> to_charlist()
-          |> Enum.all?(&(&1 in 0x21..0x7E))
+          |> Enum.all?(&Guards.is_valid_char/1)
 
         if chars_ascii? do
           {:ok, ascii}

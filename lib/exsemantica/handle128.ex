@@ -3,8 +3,7 @@ defmodule Exsemantica.Handle128 do
   A Handle128 is a 16-char ASCII identifier, that can be tested for equality by
   most SIMD engines.
   """
-
-  defguard is_valid(item) when is_binary(item) and byte_size(item) > 0 and byte_size(item) <= 16
+  require Exsemantica.HandleGuards, as: Guards
 
   @doc """
   Converts a handle into a Handle128 with at most 16 characters.
@@ -19,11 +18,11 @@ defmodule Exsemantica.Handle128 do
          |> Unidecode.decode()
          |> String.trim()
          |> String.replace(" ", "_") do
-      ascii when is_valid(ascii) ->
+      ascii when Guards.is_valid_pre(ascii) ->
         chars_ascii? =
           ascii
           |> to_charlist()
-          |> Enum.all?(&(&1 in 0x21..0x7E))
+          |> Enum.all?(&Guards.is_valid_char/1)
 
         if chars_ascii? do
           {:ok, ascii}
