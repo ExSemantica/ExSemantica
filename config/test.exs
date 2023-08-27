@@ -17,7 +17,7 @@ config :exsemantica, Exsemantica.Repo,
 # you can enable the server option below.
 config :exsemantica, ExsemanticaWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "ZAq1CLBAqAeHb6/Qd9q0B1VH4Ze/OJ3OVD3k+AG6hlpxD71x2McXv4QiVa/sbjpv",
+  secret_key_base: "8moQ6ia4ZzFivD4kHYp8cuJYmxTjTH7eiY25WfnIMw96CQAoh5+Y3GTOvtg0dN9+",
   server: false
 
 # In test we don't send emails.

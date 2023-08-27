@@ -7,7 +7,7 @@ defmodule ExsemanticaWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_exsemantica_key",
-    signing_salt: "JmrwWdlr",
+    signing_salt: "m80jZsb5",
     same_site: "Lax"
   ]
 

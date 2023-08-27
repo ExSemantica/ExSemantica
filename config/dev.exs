@@ -3,19 +3,22 @@ import Config
 # Configure your database
 config :exsemantica, Exsemantica.Repo,
   username: "postgres",
-  password: "postgres",
+  password: "change_me",
   hostname: "localhost",
   database: "exsemantica_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
+config :exsemantica, commit_sha_result: System.cmd("git", ["rev-parse", "--short", "HEAD"])
+config :exsemantica, dev_routes: true
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
 # The watchers configuration can be used to run external
-# watchers to your application. For example, we use it
-# with esbuild to bundle .js and .css sources.
+# watchers to your application. For example, we can use it
+# to bundle .js and .css sources.
 config :exsemantica, ExsemanticaWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
@@ -23,14 +26,11 @@ config :exsemantica, ExsemanticaWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "1Ct/CL/ChIR0Z/1GA/k1jZR77y7XU2R6rFph9fky1C//EiilTnE+BkoszQ/07UqN",
+  secret_key_base: "Sx5082nytst0Gj/GD4evmu9IQLXdJxWzG2pRwh3VuNtZGmPkkBJYl1QtHkwEOWv4",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
   ]
-
-config :exsemantica, commit_sha_result: System.cmd("git", ["rev-parse", "--short", "HEAD"])
-config :exsemantica, dev_routes: true
 
 # ## SSL Support
 #
