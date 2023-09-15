@@ -1,6 +1,6 @@
 defmodule Exsemantica.AggHandle do
   @moduledoc """
-  An AggHandle is a lowercase ASCII identifier used to identify aggregates.
+  An AggHandle is a 32-char ASCII identifier used to identify aggregates.
   """
   require Exsemantica.HandleGuards, as: Guards
 
@@ -9,7 +9,7 @@ defmodule Exsemantica.AggHandle do
   **THIS IS A LOSSY CONVERSION**.
   ```elixir
       iex> Exsemantica.AggHandle.convert_to("老干妈")
-      {:ok, "lao_gan_ma"}
+      {:ok, "Lao_Gan_Ma"}
   ```
   """
   def convert_to(item) do
