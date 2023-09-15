@@ -69,7 +69,7 @@ config :exsemantica, ExsemanticaWeb.Endpoint,
 config :exsemantica, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
-config :logger, :console, format: "[$level] $message\n"
+config :logger, :console, format: "[$level] $metadata$message\n", metadata: [:mfa]
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.

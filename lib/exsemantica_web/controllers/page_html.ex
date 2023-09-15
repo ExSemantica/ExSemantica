@@ -9,28 +9,38 @@ defmodule ExsemanticaWeb.PageHTML do
   # POST SUBRENDERING
   # ===========================================================================
   def agg_post(assigns) do
-    assigns = assigns |> assign(:poster, Exsemantica.Repo.get(Exsemantica.User, assigns.result.id))
+    assigns =
+      assigns |> assign(:poster, Exsemantica.Repo.get(Exsemantica.User, assigns.result.id))
+
     case assigns.result.type do
       :self ->
         ~H"""
         <div class="bg-gray-100 m-4 p-4 shadow-xl">
           <span title="self post"><.icon name="hero-document" class="float-left m-2 p-3" /></span>
           <h2 class="text-xl m-1"><%= @result.title %></h2>
-          <br>
-          <p class="text-xs italic">self posted <%= @result.inserted_at %> by <.link class="text-blue-800" href={~p"/u/#{@poster.handle}"}>/u/<%= @poster.handle %></.link></p>
+          <br />
+          <p class="text-xs italic">
+            self posted <%= @result.inserted_at %> by
+            <.link class="text-blue-800" href={~p"/u/#{@poster.handle}"}>/u/<%= @poster.handle %></.link>
+          </p>
         </div>
         """
+
       :link ->
         ~H"""
         <div class="bg-gray-100 m-4 p-4 shadow-xl">
           <span title="link post"><.icon name="hero-link" class="float-left m-2 p-3" /></span>
           <h2 class="text-xl m-1"><%= @result.title %></h2>
-          <br>
-          <p class="text-xs italic">link posted <%= @result.inserted_at %> by <.link class="text-blue-800" href={~p"/u/#{@poster.handle}"}>/u/<%= @poster.handle %></.link></p>
+          <br />
+          <p class="text-xs italic">
+            link posted <%= @result.inserted_at %> by
+            <.link class="text-blue-800" href={~p"/u/#{@poster.handle}"}>/u/<%= @poster.handle %></.link>
+          </p>
         </div>
         """
     end
   end
+
   # ===========================================================================
   # MAIN ELEMENT
   # ===========================================================================
@@ -43,9 +53,17 @@ defmodule ExsemanticaWeb.PageHTML do
     # convert page number to ID offset
     multi_id = all_count - assigns.page * @fetch_limit
     # query
-    results = Exsemantica.Repo.all(from p in Exsemantica.Post, order_by: [desc: p.id], where: p.id <= ^multi_id, limit: @fetch_limit)
+    results =
+      Exsemantica.Repo.all(
+        from p in Exsemantica.Post,
+          order_by: [desc: p.id],
+          where: p.id <= ^multi_id,
+          limit: @fetch_limit
+      )
+
     # assign our results
     assigns = assigns |> assign(:results, results)
+
     ~H"""
     <%= for result <- @results do %>
       <.agg_post result={result} />
@@ -61,7 +79,7 @@ defmodule ExsemanticaWeb.PageHTML do
     <div class="bg-gray-100 m-4 p-4 shadow-xl">
       <h2 class="text-xl font-medium">Placeholder</h2>
       <p>Community Main</p>
-      <br>
+      <br />
       <p class="text-xs italic">Foot</p>
     </div>
     """
@@ -75,11 +93,12 @@ defmodule ExsemanticaWeb.PageHTML do
     <div class="bg-gray-100 m-4 p-4 shadow-xl">
       <h2 class="text-xl font-medium">Placeholder</h2>
       <p>User Main</p>
-      <br>
+      <br />
       <p class="text-xs italic">Foot</p>
     </div>
     """
   end
+
   # ===========================================================================
   # ASIDE ELEMENT
   # ===========================================================================
@@ -114,7 +133,14 @@ defmodule ExsemanticaWeb.PageHTML do
     <h2 class="text-xl pl-4">Description</h2>
     <p class="bg-slate-100 m-4 p-4 shadow-xl"><%= @description %></p>
     <h2 class="text-xl pl-4">Moderators</h2>
-    <p class="bg-slate-100 m-4 p-4 shadow-xl"><span :for={moderator <- @moderators}><.link class="text-blue-800" href={~p"/u/#{moderator.handle}"}>/u/<%= moderator.handle %></.link><br></span></p>
+    <p class="bg-slate-100 m-4 p-4 shadow-xl">
+      <span :for={moderator <- @moderators}>
+        <.link class="text-blue-800" href={~p"/u/#{moderator.handle}"}>
+          /u/<%= moderator.handle %>
+        </.link>
+        <br />
+      </span>
+    </p>
     """
   end
 
@@ -125,7 +151,12 @@ defmodule ExsemanticaWeb.PageHTML do
     ~H"""
     <h1 class="text-2xl p-4">Information</h1>
     <h2 class="text-xl pl-4">Moderates</h2>
-    <p class="bg-slate-100 m-4 p-4 shadow-xl"><span :for={aggregate <- @user.aggregates}><.link class="text-blue-800" href={~p"/s/#{aggregate.name}"}>/s/<%= aggregate.name %></.link><br></span></p>
+    <p class="bg-slate-100 m-4 p-4 shadow-xl">
+      <span :for={aggregate <- @user.aggregates}>
+        <.link class="text-blue-800" href={~p"/s/#{aggregate.name}"}>/s/<%= aggregate.name %></.link>
+        <br />
+      </span>
+    </p>
     """
   end
 
@@ -135,7 +166,12 @@ defmodule ExsemanticaWeb.PageHTML do
     <h2 class="text-xl pl-4">Description</h2>
     <p class="bg-slate-100 m-4 p-4 shadow-xl"><%= @user.description %></p>
     <h2 class="text-xl pl-4">Moderates</h2>
-    <p class="bg-slate-100 m-4 p-4 shadow-xl"><span :for={aggregate <- @user.aggregates}><.link class="text-blue-800" href={~p"/s/#{aggregate.name}"}>/s/<%= aggregate.name %></.link><br></span></p>
+    <p class="bg-slate-100 m-4 p-4 shadow-xl">
+      <span :for={aggregate <- @user.aggregates}>
+        <.link class="text-blue-800" href={~p"/s/#{aggregate.name}"}>/s/<%= aggregate.name %></.link>
+        <br />
+      </span>
+    </p>
     """
   end
 end

@@ -19,7 +19,8 @@ defmodule Exsemantica.MixProject do
   def application do
     [
       mod: {Exsemantica.Application, []},
-      extra_applications: [:logger, :runtime_tools, :os_mon]
+      extra_applications: [:logger, :runtime_tools, :os_mon],
+      included_applications: [:mnesia]
     ]
   end
 

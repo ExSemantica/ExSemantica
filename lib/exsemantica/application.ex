@@ -7,6 +7,9 @@ defmodule Exsemantica.Application do
 
   @impl true
   def start(_type, _args) do
+    :mnesia.create_schema([Node.self()])
+    :mnesia.start()
+
     :persistent_term.put(
       Exsemantica.Version,
       case Application.get_env(:exsemantica, :commit_sha_result) do
@@ -28,9 +31,11 @@ defmodule Exsemantica.Application do
       # Start Finch
       {Finch, name: Exsemantica.Finch},
       # Start the Endpoint (http/https)
-      ExsemanticaWeb.Endpoint
+      ExsemanticaWeb.Endpoint,
       # Start a worker by calling: Exsemantica.Worker.start_link(arg)
       # {Exsemantica.Worker, arg}
+
+      Exsemantica.Trending
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

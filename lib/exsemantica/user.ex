@@ -11,7 +11,10 @@ defmodule Exsemantica.User do
 
     has_many :posts, Exsemantica.Post
     has_many :comments, Exsemantica.Comment
-    many_to_many :aggregates, Exsemantica.Aggregate, join_through: "aggregates_moderators", on_replace: :delete
+
+    many_to_many :aggregates, Exsemantica.Aggregate,
+      join_through: "aggregates_moderators",
+      on_replace: :delete
 
     timestamps()
   end

@@ -15,11 +15,16 @@ defmodule ExsemanticaWeb.PageController do
   end
 
   def aggregate(conn, %{"aggregate" => aggregate} = params) do
-    query = from a in Exsemantica.Aggregate, where: ilike(a.name, ^aggregate), preload: [:posts, :moderators]
+    query =
+      from a in Exsemantica.Aggregate,
+        where: ilike(a.name, ^aggregate),
+        preload: [:posts, :moderators]
 
     case Exsemantica.Repo.one(query) do
       nil ->
-        conn |> put_flash(:error, gettext("That community does not exist.")) |> redirect(to: ~p"/s/all")
+        conn
+        |> put_flash(:error, gettext("That community does not exist."))
+        |> redirect(to: ~p"/s/all")
 
       community ->
         conn
@@ -34,7 +39,9 @@ defmodule ExsemanticaWeb.PageController do
 
     case Exsemantica.Repo.one(query) do
       nil ->
-        conn |> put_flash(:error, gettext("That user does not exist.")) |> redirect(to: ~p"/s/all")
+        conn
+        |> put_flash(:error, gettext("That user does not exist."))
+        |> redirect(to: ~p"/s/all")
 
       user ->
         conn
