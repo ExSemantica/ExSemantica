@@ -5,6 +5,8 @@ defmodule Exsemantica.Trending.Tracker do
   require Logger
   use GenServer
 
+  @clear_timer 30000
+
   # ===========================================================================
   # Public-facing calls
   # ===========================================================================
@@ -44,6 +46,7 @@ defmodule Exsemantica.Trending.Tracker do
   @impl true
   def init(_init_arg) do
     Logger.debug("Starting")
+    Process.send_after(self(), :clear, @clear_timer)
 
     :mnesia.create_table(__MODULE__.Popularities,
       record_name: :popularity,
@@ -54,6 +57,15 @@ defmodule Exsemantica.Trending.Tracker do
     )
 
     {:ok, []}
+  end
+
+  @impl true
+  def handle_info(:clear, state) do
+    Logger.debug("Clearing table...")
+    :mnesia.clear_table(__MODULE__.Popularities)
+    Process.send_after(self(), :clear, @clear_timer)
+
+    {:noreply, state}
   end
 
   @impl true
@@ -100,7 +112,7 @@ defmodule Exsemantica.Trending.Tracker do
         {items, _end_n} =
           :mnesia.foldr(&fold_popularity/2, {[], n}, __MODULE__.Popularities)
 
-        items |> Map.new()
+        items
       end)
 
     {:reply, {:ok, result}, state}
