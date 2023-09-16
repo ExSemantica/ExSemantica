@@ -35,7 +35,8 @@ defmodule Exsemantica.Application do
       # Start a worker by calling: Exsemantica.Worker.start_link(arg)
       # {Exsemantica.Worker, arg}
 
-      Exsemantica.Trending
+      Exsemantica.Trending,
+      Exsemantica.Backbone
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

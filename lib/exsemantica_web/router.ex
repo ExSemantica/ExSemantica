@@ -17,9 +17,9 @@ defmodule ExsemanticaWeb.Router do
   scope "/", ExsemanticaWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
-    get "/s/:aggregate", PageController, :aggregate
-    get "/u/:username", PageController, :user
+    live "/", Live.AllLive
+    live "/s/:aggregate", Live.AggregateLive
+    live "/u/:username", Live.UserLive
   end
 
   # Other scopes may use custom stacks.

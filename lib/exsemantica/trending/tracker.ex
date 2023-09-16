@@ -98,22 +98,23 @@ defmodule Exsemantica.Trending.Tracker do
     {:atomic, result} =
       :mnesia.transaction(fn ->
         {items, _end_n} =
-          :mnesia.foldr(
-            fn entry, {acc, current_n} ->
-              if current_n > 0 do
-                {:popularity, {p, _t}, trend} = entry
-                {[{trend, p} | acc], current_n - 1}
-              else
-                {acc, 0}
-              end
-            end,
-            {[], n},
-            __MODULE__.Popularities
-          )
+          :mnesia.foldr(&fold_popularity/2, {[], n}, __MODULE__.Popularities)
 
         items |> Map.new()
       end)
 
     {:reply, {:ok, result}, state}
+  end
+
+  # ===========================================================================
+  # Private functions
+  # ===========================================================================
+  defp fold_popularity(entry, {acc, i}) do
+    if i > 0 do
+      {:popularity, {p, _t}, trend} = entry
+      {[{trend, p} | acc], i - 1}
+    else
+      {acc, 0}
+    end
   end
 end
