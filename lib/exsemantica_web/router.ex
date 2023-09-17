@@ -3,6 +3,7 @@ defmodule ExsemanticaWeb.Router do
 
   pipeline :browser do
     plug :accepts, ["html"]
+
     plug :fetch_session
     plug :fetch_live_flash
     plug :put_root_layout, {ExsemanticaWeb.Layouts, :root}
@@ -17,9 +18,19 @@ defmodule ExsemanticaWeb.Router do
   scope "/", ExsemanticaWeb do
     pipe_through :browser
 
-    live "/", Live.AllLive
-    live "/s/:aggregate", Live.AggregateLive
-    live "/u/:username", Live.UserLive
+    live_session :main do
+      live "/", MainLive, :redirect_to_all
+      live "/s/:aggregate", MainLive, :aggregate
+      live "/u/:handle", MainLive, :user
+    end
+  end
+
+  scope "/api/", ExsemanticaWeb do
+    pipe_through :api
+
+    post "/login", Authentication, :log_in
+    post "/register", Authentication, :register
+    post "/logout", Authentication, :log_out
   end
 
   # Other scopes may use custom stacks.

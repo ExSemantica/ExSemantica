@@ -34,7 +34,7 @@ defmodule Exsemantica.Trending.Tracker do
   @doc """
   Fetches the most popular *n* trends.
 
-  Each trend is a key and its popularity is a value. This may change later.
+  Each trend is stored as a tuple `{name, popularity}`. This may change later.
   """
   def popular(n) do
     GenServer.call(__MODULE__, {:popular, n})

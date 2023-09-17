@@ -13,6 +13,10 @@ config :exsemantica, Exsemantica.Repo,
 config :exsemantica, commit_sha_result: System.cmd("git", ["rev-parse", "--short", "HEAD"])
 config :exsemantica, dev_routes: true
 
+config :exsemantica, Exsemantica.Guardian,
+  issuer: "exsemantica",
+  secret_key: "6JvL7Q47CsyD1OLYNUqSCyVISp7KDqp28CYhJpIYAYzScpptb+YN7og2FeD7Npnt"
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #

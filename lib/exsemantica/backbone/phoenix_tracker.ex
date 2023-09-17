@@ -24,6 +24,7 @@ defmodule Exsemantica.Backbone.PhoenixTracker do
   def online(socket, topic) do
     Phoenix.Tracker.track(__MODULE__, self(), "aggregate:" <> topic, socket, %{})
   end
+
   # ===========================================================================
   # Callbacks
   # ===========================================================================

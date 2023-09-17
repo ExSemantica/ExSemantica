@@ -24,7 +24,7 @@ import topbar from "../vendor/topbar"
 import Alpine from 'alpinejs'
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}})
+let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken, exsemantica_key: localStorage.getItem("exsemanticaKey")}})
 
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
@@ -40,5 +40,34 @@ liveSocket.connect()
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
 window.Alpine = Alpine
-Alpine.start()
 
+window.document.getElementById("loginButton").addEventListener('click', (event) => {
+  let acknowledgement = window.document.getElementById("loginAcknowledgement");
+  acknowledgement.className = '';
+  acknowledgement.textContent = "Trying to sign you in...";
+  let handle = window.document.getElementById("loginHandle");
+  let password = window.document.getElementById("loginPassword");
+  fetch('/api/login', {
+    method: 'POST',
+    headers: {'content-type': 'application/json'},
+    body: JSON.stringify({
+      'username': handle.value,
+      'password': password.value
+    })
+  })
+  .then((response) => { return response.json() })
+  .then((json) => {
+    if (json.e) {
+      acknowledgement.className = 'text-red-500 font-bold';
+      acknowledgement.textContent = `${json.message}`;
+    } else {
+      acknowledgement.textContent = json.message;
+      setTimeout(() => {
+        localStorage.setItem("exsemanticaKey", json.token);
+        window.location.replace('/s/all');
+      }, 2000);
+    }
+  });
+});
+
+Alpine.start()
