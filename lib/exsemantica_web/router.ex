@@ -30,7 +30,6 @@ defmodule ExsemanticaWeb.Router do
 
     post "/login", Authentication, :log_in
     post "/register", Authentication, :register
-    post "/logout", Authentication, :log_out
   end
 
   # Other scopes may use custom stacks.

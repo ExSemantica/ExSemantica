@@ -23,8 +23,10 @@ import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 import Alpine from 'alpinejs'
 
+const token = window.localStorage.getItem("token");
+
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken, exsemantica_key: localStorage.getItem("exsemanticaKey")}})
+let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken, exsemantica_token: token}})
 
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
@@ -40,8 +42,13 @@ liveSocket.connect()
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
 window.Alpine = Alpine
+Alpine.start();
 
-window.document.getElementById("loginButton").addEventListener('click', (event) => {
+window.addEventListener("phx:clear-token", (event) => {
+  window.localStorage.removeItem("token")
+})
+
+window.onLogin = () => {
   let acknowledgement = window.document.getElementById("loginAcknowledgement");
   acknowledgement.className = '';
   acknowledgement.textContent = "Trying to sign you in...";
@@ -63,11 +70,9 @@ window.document.getElementById("loginButton").addEventListener('click', (event) 
     } else {
       acknowledgement.textContent = json.message;
       setTimeout(() => {
-        localStorage.setItem("exsemanticaKey", json.token);
+        window.localStorage.setItem("token", json.token);
         window.location.replace('/s/all');
       }, 2000);
     }
-  });
-});
-
-Alpine.start()
+  })
+}

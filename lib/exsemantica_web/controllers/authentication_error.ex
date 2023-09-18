@@ -2,7 +2,7 @@ defmodule ExsemanticaWeb.AuthenticationError do
   require Logger
   use ExsemanticaWeb, :controller
   @behaviour Guardian.Plug.ErrorHandler
-  def auth_error(conn, error, opts) do
+  def auth_error(conn, error, _opts) do
     Logger.error(inspect(error))
 
     conn

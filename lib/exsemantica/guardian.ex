@@ -16,7 +16,7 @@ defmodule Exsemantica.Guardian do
   end
 
   def resource_from_claims(%{"sub" => id}) do
-    user = Exsemantica.Repo.one(from u in Exsemantica.User, where: u.id == ^id, select: u)
+    user = Exsemantica.Repo.one(Exsemantica.User, id: id)
 
     case user do
       nil -> {:error, :enoent}
