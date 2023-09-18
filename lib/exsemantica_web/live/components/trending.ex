@@ -7,18 +7,21 @@ defmodule ExsemanticaWeb.Components.Trending do
 
   def render(assigns) do
     ~H"""
-    <aside class="bg-slate-200 m-8 p-8 shadow-2xl w-1/3 h-min">
+    <div>
       <p><.icon name="hero-arrow-trending-up" /> <b>Trends</b></p>
       <%= if @trends == [] do %>
         <p class="pl-8">Nothing is trending</p>
       <% else %>
         <%= for {trend, count} <- @trends do %>
           <p class="pl-8">
-            <.link class="text-blue-800" href={~p"/s/#{trend}"}>/s/<%= trend %></.link> (<%= count %>)
+            <.link class="text-blue-800" navigate={~p"/s/#{trend}"}>/s/<%= trend %></.link>
+            (<%= count %>)
           </p>
         <% end %>
       <% end %>
-    </aside>
+      <br />
+      <p class="text-xs">Updated <%= @stamp %></p>
+    </div>
     """
   end
 end

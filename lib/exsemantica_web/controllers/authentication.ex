@@ -19,7 +19,9 @@ defmodule ExsemanticaWeb.Authentication do
       {:ok, user} ->
         conn =
           conn
-          |> Exsemantica.Guardian.Plug.sign_in(user, %{typ: "access"}, ttl: {@minutes_grace, :minutes})
+          |> Exsemantica.Guardian.Plug.sign_in(user, %{typ: "access"},
+            ttl: {@minutes_grace, :minutes}
+          )
 
         conn
         |> put_status(200)

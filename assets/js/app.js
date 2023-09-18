@@ -49,11 +49,11 @@ window.addEventListener("phx:clear-token", (event) => {
 })
 
 window.onLogin = () => {
-  let acknowledgement = window.document.getElementById("loginAcknowledgement");
-  acknowledgement.className = '';
-  acknowledgement.textContent = "Trying to sign you in...";
-  let handle = window.document.getElementById("loginHandle");
-  let password = window.document.getElementById("loginPassword");
+  let acknowledgement = window.document.getElementById("loginAcknowledgement")
+  acknowledgement.className = ''
+  acknowledgement.textContent = "Trying to sign you in..."
+  let handle = window.document.getElementById("loginHandle")
+  let password = window.document.getElementById("loginPassword")
   fetch('/api/login', {
     method: 'POST',
     headers: {'content-type': 'application/json'},
@@ -65,14 +65,19 @@ window.onLogin = () => {
   .then((response) => { return response.json() })
   .then((json) => {
     if (json.e) {
-      acknowledgement.className = 'text-red-500 font-bold';
-      acknowledgement.textContent = `${json.message}`;
+      acknowledgement.className = 'text-red-500 font-bold'
+      acknowledgement.textContent = `${json.message}`
     } else {
-      acknowledgement.textContent = json.message;
+      acknowledgement.textContent = json.message
       setTimeout(() => {
-        window.localStorage.setItem("token", json.token);
-        window.location.replace('/s/all');
-      }, 2000);
+        window.localStorage.setItem("token", json.token)
+        window.location.replace('/s/all')
+      }, 2000)
     }
   })
+}
+
+window.onLogout = () => {
+  window.localStorage.removeItem("token")
+  window.location.replace('/s/all')
 }

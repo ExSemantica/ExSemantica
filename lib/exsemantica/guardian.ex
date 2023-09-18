@@ -3,7 +3,6 @@ defmodule Exsemantica.Guardian do
   Handles Guardian-based authentication.
   """
   use Guardian, otp_app: :exsemantica
-  import Ecto.Query
 
   def subject_for_token(%Exsemantica.User{id: id}, _claims) do
     subject = to_string(id)
