@@ -30,12 +30,15 @@ defmodule Exsemantica.Backbone.Authentication do
 
     case res do
       {:ok, user, _claims} ->
-        Logger.info("Authentication ok: #{inspect(user)}")
         {:ok, user}
 
       {:error, error} ->
-        Logger.warning("Authentication error: #{inspect(error)} (#{inspect(token)})")
         {:error, error}
     end
+  end
+
+  def log_out(conn) do
+    conn
+    |> Exsemantica.Guardian.Plug.sign_out()
   end
 end

@@ -2,9 +2,15 @@ defmodule ExsemanticaWeb.Router do
   use ExsemanticaWeb, :router
 
   pipeline :browser do
+    plug Guardian.Plug.Pipeline,
+      module: Exsemantica.Guardian,
+      error_handler: ExsemanticaWeb.AuthenticationError
+
     plug :accepts, ["html"]
 
     plug :fetch_session
+    plug Guardian.Plug.VerifySession, claims: %{"typ" => "access"}, key: :token
+    plug Guardian.Plug.LoadResource, allow_blank: true
     plug :fetch_live_flash
     plug :put_root_layout, {ExsemanticaWeb.Layouts, :root}
     plug :protect_from_forgery
@@ -19,6 +25,7 @@ defmodule ExsemanticaWeb.Router do
     pipe_through :browser
 
     live_session :main do
+
       live "/", MainLive, :redirect_to_all
       live "/s/:aggregate", MainLive, :aggregate
       live "/u/:handle", MainLive, :user
@@ -30,6 +37,7 @@ defmodule ExsemanticaWeb.Router do
 
     post "/login", Authentication, :log_in
     post "/register", Authentication, :register
+    post "/logout", Authentication, :log_out
   end
 
   # Other scopes may use custom stacks.

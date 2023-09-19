@@ -4,7 +4,6 @@ defmodule ExsemanticaWeb.MainLive do
   """
   require Logger
   use ExsemanticaWeb, :live_view
-  import ExsemanticaWeb.Gettext
 
   @users_time 1_000
   @trend_time 1_000
@@ -21,12 +20,17 @@ defmodule ExsemanticaWeb.MainLive do
   # Mount
   # ===========================================================================
   def mount(_params, _session, socket) when socket.assigns.live_action == :redirect_to_all do
-    {:ok, socket |> redirect(to: ~p"/s/all")}
+    {:ok, socket |> push_redirect(to: ~p"/s/all")}
   end
 
   def mount(params, session, socket) do
     if socket |> connected? do
-      socket = socket |> assign(loading: false) |> push_event("transition-loader", %{})
+      socket =
+        socket
+        |> do_auth(session)
+        |> assign(loading: false)
+        |> push_event("transition-loader", %{})
+
       post_mount(params, session, socket)
     else
       {:ok, socket |> assign(loading: true)}
@@ -38,7 +42,7 @@ defmodule ExsemanticaWeb.MainLive do
   # ===========================================================================
   def post_mount(%{"handle" => handle}, _session, socket)
       when socket.assigns.live_action == :user do
-    {:ok, socket |> do_auth |> assign(%{otype: :user, ident: handle})}
+    {:ok, socket |> assign(%{otype: :user, ident: handle})}
   end
 
   def post_mount(%{"aggregate" => "all"}, _session, socket)
@@ -47,9 +51,7 @@ defmodule ExsemanticaWeb.MainLive do
     Process.send_after(self(), :trends_heartbeat, @trend_time)
 
     {:ok,
-     socket
-     |> do_auth
-     |> assign(%{otype: :aggregate, ident: nil, trends: trends, stamp: get_timestamp()})}
+     socket |> assign(%{otype: :aggregate, ident: nil, trends: trends, stamp: get_timestamp(), results: ""})}
   end
 
   def post_mount(%{"aggregate" => aggregate}, _session, socket)
@@ -61,7 +63,6 @@ defmodule ExsemanticaWeb.MainLive do
 
     {:ok,
      socket
-     |> do_auth
      |> assign(%{otype: :aggregate, ident: aggregate, users: users, stamp: get_timestamp()})}
   end
 
@@ -97,6 +98,21 @@ defmodule ExsemanticaWeb.MainLive do
   end
 
   # ===========================================================================
+  # Handle LiveView events
+  # ===========================================================================
+  def handle_event("all-search-change", %{"search" => ""}, socket) do
+    send_update(ExsemanticaWeb.Components.AllSearch, id: "all-search", results: "")
+    {:noreply, socket}
+  end
+  def handle_event("all-search-change", %{"search" => query}, socket) do
+    send_update(ExsemanticaWeb.Components.AllSearch, id: "all-search", results: "TODO: Implement this.")
+    {:noreply, socket}
+  end
+  def handle_event("all-search-enter", %{"search" => query}, socket) do
+    {:noreply, socket}
+  end
+
+  # ===========================================================================
   # Render
   # ===========================================================================
   def render(assigns) do
@@ -109,7 +125,7 @@ defmodule ExsemanticaWeb.MainLive do
         :aggregate when is_nil(assigns.ident) ->
           ~H"""
           <.lheader myuser={@myuser} />
-          <.lbody_all trends={@trends} stamp={@stamp} />
+          <.lbody_all trends={@trends} stamp={@stamp} results={@results} />
           <.lfooter />
           """
 
@@ -133,29 +149,14 @@ defmodule ExsemanticaWeb.MainLive do
   # ===========================================================================
   # Private functions
   # ===========================================================================
-  defp get_handle(socket) do
-    token = get_connect_params(socket)["exsemantica_token"]
-
-    case Authentication.verify_token(token) do
-      {:ok, user} ->
-        {:ok, user.handle}
-
-      {:error, error} ->
-        {:error, error}
-    end
-  end
-
-  defp do_auth(socket) do
-    case socket |> get_handle do
+  defp do_auth(socket, session) do
+    case Authentication.verify_token(session["guardian_default_token"]) do
       {:ok, myuser} ->
-        socket |> assign(myuser: myuser)
+        socket |> assign(myuser: myuser.handle)
 
-      {:error, :token_expired} ->
-        socket
-        |> assign(myuser: nil)
-        |> put_flash(:error, gettext("Your session expired."))
-        |> push_event("clear-token", %{})
-
+      # TODO: I want to make an "expired session" message appear then clear.
+      # I'm not quite sure how to clear it in LiveView cleanly.
+      # Let's not implement this just yet
       {:error, _error} ->
         socket |> assign(myuser: nil)
     end

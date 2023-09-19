@@ -5,12 +5,14 @@ defmodule ExsemanticaWeb.Components.Trending do
   """
   use ExsemanticaWeb, :live_component
 
+  import ExsemanticaWeb.Gettext
+
   def render(assigns) do
     ~H"""
     <div>
-      <p><.icon name="hero-arrow-trending-up" /> <b>Trends</b></p>
+      <p><.icon name="hero-arrow-trending-up" /> <b><%= gettext("Trends") %></b></p>
       <%= if @trends == [] do %>
-        <p class="pl-8">Nothing is trending</p>
+        <p class="pl-8"><%= gettext("Nothing is trending.") %></p>
       <% else %>
         <%= for {trend, count} <- @trends do %>
           <p class="pl-8">
@@ -20,7 +22,7 @@ defmodule ExsemanticaWeb.Components.Trending do
         <% end %>
       <% end %>
       <br />
-      <p class="text-xs">Updated <%= @stamp %></p>
+      <p class="text-xs"><%= gettext("Updated %{stamp}", stamp: @stamp) %></p>
     </div>
     """
   end

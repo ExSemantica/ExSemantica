@@ -23,10 +23,8 @@ import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 import Alpine from 'alpinejs'
 
-const token = window.localStorage.getItem("token");
-
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken, exsemantica_token: token}})
+let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}})
 
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
@@ -43,10 +41,6 @@ liveSocket.connect()
 window.liveSocket = liveSocket
 window.Alpine = Alpine
 Alpine.start();
-
-window.addEventListener("phx:clear-token", (event) => {
-  window.localStorage.removeItem("token")
-})
 
 window.onLogin = () => {
   let acknowledgement = window.document.getElementById("loginAcknowledgement")
@@ -70,14 +64,16 @@ window.onLogin = () => {
     } else {
       acknowledgement.textContent = json.message
       setTimeout(() => {
-        window.localStorage.setItem("token", json.token)
         window.location.replace('/s/all')
       }, 2000)
     }
   })
 }
 
-window.onLogout = () => {
-  window.localStorage.removeItem("token")
-  window.location.replace('/s/all')
+window.onLogout = () => {fetch('/api/logout', {
+    method: 'POST'
+  })
+  .then((response) => {
+    window.location.replace('/s/all')
+  })
 }
