@@ -3,6 +3,8 @@ defmodule ExsemanticaWeb.MainLive do
   A live view that handles most logic in the site.
   """
   require Logger
+  import Ecto.Query
+  import ExsemanticaWeb.Gettext
   use ExsemanticaWeb, :live_view
 
   @users_time 1_000
@@ -51,19 +53,54 @@ defmodule ExsemanticaWeb.MainLive do
     Process.send_after(self(), :trends_heartbeat, @trend_time)
 
     {:ok,
-     socket |> assign(%{otype: :aggregate, ident: nil, trends: trends, stamp: get_timestamp(), results: ""})}
+     socket
+     |> assign(%{
+       otype: :aggregate,
+       ident: nil,
+       trends: trends,
+       stamp: get_timestamp(),
+       results: ""
+     })}
   end
 
   def post_mount(%{"aggregate" => aggregate}, _session, socket)
       when socket.assigns.live_action == :aggregate do
-    Tracker.online(self(), aggregate)
-    Process.send_after(self(), :users_heartbeat, @users_time)
-    {:ok, users} = CountOnline.get("aggregate:" <> aggregate)
-    Trending.increment(aggregate)
+    case Exsemantica.Repo.one(
+           from a in Exsemantica.Aggregate,
+             where: ilike(a.name, ^aggregate),
+             select: a,
+             preload: [:moderators]
+         ) do
+      agg = %Exsemantica.Aggregate{name: name, description: description, moderators: moderators} ->
+        IO.inspect(agg)
+        equivalent_case? = String.equivalent?(name, aggregate)
 
-    {:ok,
-     socket
-     |> assign(%{otype: :aggregate, ident: aggregate, users: users, stamp: get_timestamp()})}
+        if equivalent_case? do
+          Tracker.online(self(), name)
+          Process.send_after(self(), :users_heartbeat, @users_time)
+          {:ok, users} = CountOnline.get("aggregate:" <> name)
+          Trending.increment(name)
+
+          {:ok,
+           socket
+           |> assign(%{
+             otype: :aggregate,
+             description: description,
+             ident: name,
+             users: users,
+             stamp: get_timestamp(),
+             moderators: moderators           })}
+        else
+          # Change to the correct case.
+          {:ok, socket |> push_navigate(to: ~p"/s/#{name}")}
+        end
+
+      _other ->
+        {:ok,
+         socket
+         |> push_navigate(to: ~p"/s/all")
+         |> put_flash(:error, gettext("Failed to load aggregate"))}
+    end
   end
 
   # ===========================================================================
@@ -104,10 +141,16 @@ defmodule ExsemanticaWeb.MainLive do
     send_update(ExsemanticaWeb.Components.AllSearch, id: "all-search", results: "")
     {:noreply, socket}
   end
+
   def handle_event("all-search-change", %{"search" => query}, socket) do
-    send_update(ExsemanticaWeb.Components.AllSearch, id: "all-search", results: "TODO: Implement this.")
+    send_update(ExsemanticaWeb.Components.AllSearch,
+      id: "all-search",
+      results: "TODO: Implement this."
+    )
+
     {:noreply, socket}
   end
+
   def handle_event("all-search-enter", %{"search" => query}, socket) do
     {:noreply, socket}
   end
@@ -132,7 +175,7 @@ defmodule ExsemanticaWeb.MainLive do
         :aggregate ->
           ~H"""
           <.lheader myuser={@myuser} />
-          <.lbody_aggregate aggregate={@ident} users={@users} stamp={@stamp} />
+          <.lbody_aggregate aggregate={@ident} moderators={@moderators} description={@description} users={@users} stamp={@stamp} />
           <.lfooter />
           """
 

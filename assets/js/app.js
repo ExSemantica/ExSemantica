@@ -39,8 +39,6 @@ liveSocket.connect()
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
-window.Alpine = Alpine
-Alpine.start();
 
 window.onLogin = () => {
   let acknowledgement = window.document.getElementById("loginAcknowledgement")
@@ -77,3 +75,33 @@ window.onLogout = () => {fetch('/api/logout', {
     window.location.replace('/s/all')
   })
 }
+
+Alpine.store('menus', {
+	loginOpen: false,
+	navOpen: false,
+
+	closeMenus() {
+		this.loginOpen = false
+		this.navOpen = false
+	},
+
+	toggleNavMenu() {
+		this.navOpen = !this.navOpen
+	},
+
+	openLoginMenu() {
+		this.navOpen = false
+		this.loginOpen = true
+	},
+
+	closeNavMenu() {
+		this.navOpen = false
+	}
+});
+window.Alpine = Alpine
+window.addEventListener("keydown", event => {
+	if (event.key === "Escape") {
+		Alpine.store('menus').closeMenus()
+	}
+});
+Alpine.start()
