@@ -88,3 +88,13 @@ config :phoenix_live_view, :debug_heex_annotations, true
 
 # Disable swoosh api client as it is only required for production adapters.
 config :swoosh, :api_client, false
+
+config :email_checker,
+  default_dns: :system,
+  also_dns: [],
+  validations: [EmailChecker.Check.Format, EmailChecker.Check.MX],
+  smtp_retries: 2,
+  timeout_milliseconds: 5000
+
+
+config :exsemantica, Exsemantica.Auth, use_invite_codes: true

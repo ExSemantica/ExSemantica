@@ -4,6 +4,9 @@ defmodule Exsemantica.Auth do
   """
   import Ecto.Query
 
+  @doc """
+  Checks if the username and password correspond to a user in the database
+  """
   def check_user(username, password) do
     user_data =
       Exsemantica.Repo.one(from u in Exsemantica.Repo.User, where: ilike(u.username, ^username))
@@ -25,6 +28,9 @@ defmodule Exsemantica.Auth do
     end
   end
 
+  @doc """
+  Checks if the authentication token is valid
+  """
   def check_token(token) do
     resource = Exsemantica.Auth.Guardian.resource_from_token(token)
 
@@ -35,5 +41,37 @@ defmodule Exsemantica.Auth do
       {:error, error} ->
         {:error, error}
     end
+  end
+
+  @doc """
+  Checks if the username or or username/e-mail combination are free to be used
+  """
+  def check_free(username, email) do
+    user_data =
+      Exsemantica.Repo.one(from u in Exsemantica.Repo.User, where: ilike(u.username, ^username))
+
+    email_valid? = EmailChecker.valid?(email)
+
+    case user_data do
+      # User  doesn't exist
+      nil when email_valid? ->
+        :ok
+
+      # User doesn't exist and the email is invalid
+      nil ->
+        {:error, :invalid}
+
+      # User exists
+      _user ->
+        {:error, :user_exists}
+    end
+  end
+
+  @spec using_invite_codes?() :: boolean()
+  @doc """
+  Returns true if this Exsemantica instance is using invite codes
+  """
+  def using_invite_codes?() do
+    Application.get_env(:exsemantica, __MODULE__)[:use_invite_codes]
   end
 end

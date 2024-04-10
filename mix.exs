@@ -80,7 +80,10 @@ defmodule Exsemantica.MixProject do
       {:argon2_elixir, "~> 4.0"},
 
       # RATIONALE: Username/aggregate automatic transliteration
-      {:unidecode, "~> 1.0"}
+      {:unidecode, "~> 1.0"},
+
+      # RATIONALE: Check if e-mails are valid before registering the account
+      {:email_checker, "~> 0.2"}
     ]
   end
 

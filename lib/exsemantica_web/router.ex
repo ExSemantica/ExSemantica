@@ -39,7 +39,7 @@ defmodule ExsemanticaWeb.Router do
     pipe_through :api
 
     post "/login", API.Auth, :log_in
-    # post "/register", API.Auth, :register
+    post "/register", API.Auth, :register
     post "/logout", API.Auth, :log_out
   end
 

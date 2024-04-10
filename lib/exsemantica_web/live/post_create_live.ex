@@ -117,8 +117,9 @@ defmodule ExsemanticaWeb.PostCreateLive do
     {:noreply,
      socket
      |> push_navigate(to: ~p"/s/#{socket.assigns.name}")
-          |> put_flash(:info, gettext("Posted successfully"))}
+     |> put_flash(:info, gettext("Posted successfully"))}
   end
+
   # ===========================================================================
   # Render
   # ===========================================================================

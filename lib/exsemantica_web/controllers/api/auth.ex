@@ -50,4 +50,9 @@ defmodule ExsemanticaWeb.API.Auth do
     |> Auth.Guardian.Plug.sign_out()
     |> send_resp(204, "")
   end
+
+  def register(conn, %{"username" => username, "password" => password, "email" => email, "invite_code" => invite_code}) do
+
+
+  end
 end
