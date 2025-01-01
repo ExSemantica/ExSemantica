@@ -20,6 +20,8 @@ defmodule Exsemantica.Schema do
               Repo.one(from(a in Repo.Aggregate, where: ilike(a.name, ^name), select: a))
           end
 
+        # TODO: Load post, etc. IDs?
+        # Abide by this if so https://graphql.org/learn/pagination/
         if is_nil(aggregate) do
           {:ok, %{}}
         else
@@ -51,6 +53,8 @@ defmodule Exsemantica.Schema do
               Repo.one(from(u in Repo.User, where: ilike(u.handle, ^handle), select: u))
           end
 
+        # TODO: Load post, etc. IDs?
+        # Abide by this if so https://graphql.org/learn/pagination/
         if is_nil(user) do
           {:ok, %{}}
         else
@@ -69,6 +73,7 @@ defmodule Exsemantica.Schema do
     end
   end
 
+  # TODO: Implement PubSub, etc.
   subscription do
     field :aggregate_posts, :post do
       arg(:aggregate_id, non_null(:id))

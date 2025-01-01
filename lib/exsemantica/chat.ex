@@ -93,15 +93,16 @@ defmodule Exsemantica.Chat do
   @impl GenServer
   def handle_cast({:direct_message, {_talker_socket, talker_state}, message}, {socket, state}) do
     socket
-      |> ThousandIsland.Socket.send(
-        %__MODULE__.Message{
-          prefix: talker_state |> __MODULE__.HostMask.get(),
-          command: "PRIVMSG",
-          params: [state.requested_handle],
-          trailing: message
-        }
-        |> __MODULE__.Message.encode()
-      )
+    |> ThousandIsland.Socket.send(
+      %__MODULE__.Message{
+        prefix: talker_state |> __MODULE__.HostMask.get(),
+        command: "PRIVMSG",
+        params: [state.requested_handle],
+        trailing: message
+      }
+      |> __MODULE__.Message.encode()
+    )
+
     {:noreply, {socket, state}, socket.read_timeout}
   end
 
@@ -556,7 +557,7 @@ defmodule Exsemantica.Chat do
   defp quit({socket, state = %{ping_timer: ping_timer, user_pid: user_pid}}, reason) do
     # This is complicated so I will explain how this all works
     if Process.alive?(user_pid) do
-      Logger.debug("#{user_pid |> __MODULE__.User.get_handle()} disconnects (#{reason}))")
+      Logger.debug("#{user_pid |> __MODULE__.User.get_handle()} disconnects (#{reason})")
 
       receiving_sockets =
         user_pid
