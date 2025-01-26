@@ -1,13 +1,6 @@
 # exsemantica
 
-The backend of ExSemantica, an open-source link aggregator.
-
-## Guidance
-
-Builds upon [the previous eactivitypub][eactivitypub] repository.
-This is a mix of incomplete pieces `v0.7` (a Phoenix 1.5 monolithic codebase) and `v0.8` (using Mnesia).
-Together these make a great concept for a simple, reliable social platform at edge.
-This is what I see and hope in `v0.10`, but failure is okay.
+An open-source link aggregator.
 
 ## How to use this?
 
@@ -37,12 +30,6 @@ Create the example user
 
 ```elixir
 iex> Exsemantica.Administration.User.create("example", "test_password", "user@example.com", "I'm a tester")
-```
-
-Try to log in with the example user
-
-```shell
-$ curl -H 'Content-Type: application/json' -X POST -d '{"username":"example","password":"test_password"}' http://localhost:4000/authentication/log_in
 ```
 
 If the JSON response's `e` is `"OK"`, then you have successfully logged in and that token is valid.

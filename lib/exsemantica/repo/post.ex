@@ -25,6 +25,8 @@ defmodule Exsemantica.Repo.Post do
   def changeset(post, attrs) do
     post
     |> cast(attrs, [:hidden, :type, :title, :contents, :user, :aggregate, :votes, :comments])
+    |> validate_length(:title, min: 1, max: 127)
+    |> validate_length(:content, min: 1, max: 4095)
     |> validate_required([:hidden, :type, :title, :contents, :user, :aggregate, :votes, :comments])
   end
 end

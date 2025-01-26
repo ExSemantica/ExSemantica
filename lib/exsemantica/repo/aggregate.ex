@@ -23,6 +23,9 @@ defmodule Exsemantica.Repo.Aggregate do
     aggregate
     |> cast(attrs, [:name, :description, :posts, :subscriptions, :moderators])
     |> validate_required([:name, :description, :posts, :subscriptions, :moderators])
+    |> validate_length(:name, min: 1, max: 31)
+    |> validate_exclusion(:name, ~w(Services))
+    |> validate_format(:name, ~r/^[0-9A-Za-z_]+$/)
     |> unique_constraint(:name)
   end
 end

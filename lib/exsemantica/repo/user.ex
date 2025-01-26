@@ -45,6 +45,9 @@ defmodule Exsemantica.Repo.User do
       :subscriptions,
       :aggregates
     ])
+    |> validate_length(:username, min: 1, max: 15)
+    |> validate_exclusion(:username, ~w(Services))
+    |> validate_format(:username, ~r/^[0-9A-Za-z_]+$/)
     |> unique_constraint(:email)
     |> unique_constraint(:username)
   end

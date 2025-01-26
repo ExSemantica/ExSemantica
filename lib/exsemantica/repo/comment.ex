@@ -24,6 +24,7 @@ defmodule Exsemantica.Repo.Comment do
   def changeset(comment, attrs) do
     comment
     |> cast(attrs, [:contents, :hidden, :user, :post, :parent, :replies, :votes])
+    |> validate_length(:content, min: 1, max: 4095)
     |> validate_required([:contents, :hidden, :user, :post, :parent, :replies, :votes])
   end
 end
