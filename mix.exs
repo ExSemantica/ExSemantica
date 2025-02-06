@@ -59,9 +59,16 @@ defmodule Exsemantica.MixProject do
       {:dns_cluster, "~> 0.1.1"},
       {:bandit, "~> 1.5"},
 
-      {:unidecode, "~> 1.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:argon2_elixir, "~> 4.1"}
+
+      # Helps auto-constrain information to ASCII
+      {:unidecode, "~> 1.0"},
+
+      # Password hashing
+      {:argon2_elixir, "~> 4.1"},
+
+      # For joining to a Sencha IRC node to give auth data by GenServers
+      {:libcluster, "~> 3.5"}
     ]
   end
 
