@@ -1,7 +1,5 @@
 defmodule Exsemantica.Administration do
   @moduledoc """
-  Convenience functions for manipulating ExSemantica.
-  
-  TODO: What examples?
+  Convenience functions for system administrators to manipulate ExSemantica.
   """
 end
