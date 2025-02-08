@@ -10,14 +10,16 @@ defmodule Exsemantica.Application do
     children = [
       ExsemanticaWeb.Telemetry,
       Exsemantica.Repo,
-      {DNSCluster, query: Application.get_env(:exsemantica, :dns_cluster_query) || :ignore},
+      # {DNSCluster, query: Application.get_env(:exsemantica, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Exsemantica.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: Exsemantica.Finch},
       # Start a worker by calling: Exsemantica.Worker.start_link(arg)
       # {Exsemantica.Worker, arg},
       # Start to serve requests, typically the last entry
-      ExsemanticaWeb.Endpoint
+      ExsemanticaWeb.Endpoint,
+      {Cluster.Supervisor,
+       [Application.get_env(:libcluster, :topologies), [name: Exsemantica.ClusterSupervisor]]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
