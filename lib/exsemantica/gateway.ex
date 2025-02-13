@@ -11,7 +11,7 @@ defmodule Exsemantica.Gateway do
   Starts the Gateway server
   """
   def start_link(_init_args) do
-    GenServer.start_link(__MODULE__, [], name: __MODULE__)
+    GenServer.start_link(__MODULE__, [], name: {__MODULE__, Node.self()})
   end
 
   # ===========================================================================
@@ -29,7 +29,7 @@ defmodule Exsemantica.Gateway do
 
     case user_data do
       nil ->
-        send(other_node, {__MODULE__, self(), {:user_info, {:error, :no_such_item}}})
+        send(other_node, {__MODULE__, Node.self(), {:user_info, {:error, :no_such_item}}})
 
       %Exsemantica.Repo.User{username: true_username, password: hash} ->
         if Argon2.verify_pass(password, hash) do
@@ -43,7 +43,7 @@ defmodule Exsemantica.Gateway do
 
           send(
             other_node,
-            {__MODULE__, self(), {:user_info, {:error, :authentication_failed}}}
+            {__MODULE__, Node.self(), {:user_info, {:error, :authentication_failed}}}
           )
         end
     end
@@ -60,7 +60,7 @@ defmodule Exsemantica.Gateway do
 
     case aggregate_data do
       nil ->
-        send(other_node, {__MODULE__, self(), {:aggregate_info, {:error, :no_such_item}}})
+        send(other_node, {__MODULE__, Node.self(), {:aggregate_info, {:error, :no_such_item}}})
 
       %Exsemantica.Repo.Aggregate{
         name: true_aggregate,
@@ -69,7 +69,7 @@ defmodule Exsemantica.Gateway do
       } ->
         send(
           other_node,
-          {__MODULE__, self(),
+          {__MODULE__, Node.self(),
            {:aggregate_info,
             {:ok,
              %{aggregate: true_aggregate, description: description, inserted_at: inserted_at}}}}
@@ -81,7 +81,7 @@ defmodule Exsemantica.Gateway do
 
   @impl true
   def handle_info({:ping, other_node}, state) do
-    send(other_node, {__MODULE__, self(), :pong})
+    send(other_node, {__MODULE__, Node.self(), :pong})
 
     {:noreply, state}
   end
