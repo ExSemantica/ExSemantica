@@ -11,7 +11,7 @@ defmodule Exsemantica.Gateway do
   Starts the Gateway server
   """
   def start_link(_init_args) do
-    GenServer.start_link(__MODULE__, [], name: {__MODULE__, Node.self()})
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
   # ===========================================================================
