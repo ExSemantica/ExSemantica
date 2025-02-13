@@ -20,7 +20,7 @@ config :logger, level: :info
 config :libcluster,
   topologies: [
     exsemantica: [
-      strategy: Elixir.Cluster.Strategy.LocalEpmd
+      strategy: Elixir.Cluster.Strategy.Gossip
     ]
   ]
 
