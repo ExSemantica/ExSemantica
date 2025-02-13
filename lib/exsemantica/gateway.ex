@@ -14,24 +14,6 @@ defmodule Exsemantica.Gateway do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  @doc """
-  Returns `:ok` only if the authentication data is a match.
-
-  TODO: Hidden users should not match.
-  """
-  def user_ok?(username, password) do
-    GenServer.call(__MODULE__, {:user_ok?, username, password})
-  end
-
-  @doc """
-  Returns `:ok` only if the aggregate name is a match.
-
-  TODO: Hidden aggregates should not match.
-  """
-  def aggregate_ok?(aggregate) do
-    GenServer.call(__MODULE__, {:aggregate_ok?, aggregate})
-  end
-
   # ===========================================================================
   @impl true
   def init(_init_args) do
@@ -39,7 +21,7 @@ defmodule Exsemantica.Gateway do
   end
 
   @impl true
-  def handle_call({:user_ok?, username, password}, _from, state) do
+  def handle_info({:user_info, other_node, username, password}, state) do
     user_data =
       Exsemantica.Repo.one(
         from u in Exsemantica.Repo.User, where: ilike(u.username, ^username), select: u
@@ -47,20 +29,30 @@ defmodule Exsemantica.Gateway do
 
     case user_data do
       nil ->
-        {:reply, {:error, :no_such_item}, state}
+        send(other_node, {__MODULE__, self(), {:user_info, {:error, :no_such_item}}})
 
-      %Exsemantica.Repo.User{username: true_username, password: hash, biography: biography} ->
+      %Exsemantica.Repo.User{username: true_username, password: hash} ->
         if Argon2.verify_pass(password, hash) do
-          {:reply, {:ok, username: true_username, biography: biography}, state}
+          send(
+            other_node,
+            {__MODULE__, self(),
+             {:user_info, {:ok, %{username: true_username}}}}
+          )
         else
           Argon2.no_user_verify()
-          {:reply, {:error, :authentication_failed}, state}
+
+          send(
+            other_node,
+            {__MODULE__, self(), {:user_info, {:error, :authentication_failed}}}
+          )
         end
     end
+
+    {:noreply, state}
   end
 
   @impl true
-  def handle_call({:aggregate_ok?, aggregate}, _from, state) do
+  def handle_info({:aggregate_info, other_node, aggregate}, state) do
     aggregate_data =
       Exsemantica.Repo.one(
         from a in Exsemantica.Repo.Aggregate, where: ilike(a.name, ^aggregate), select: a
@@ -68,10 +60,29 @@ defmodule Exsemantica.Gateway do
 
     case aggregate_data do
       nil ->
-        {:reply, {:error, :no_such_item}, state}
+        send(other_node, {__MODULE__, self(), {:aggregate_info, {:error, :no_such_item}}})
 
-      %Exsemantica.Repo.Aggregate{name: true_aggregate, description: description} ->
-        {:reply, {:ok, aggregate: true_aggregate, description: description}, state}
+      %Exsemantica.Repo.Aggregate{
+        name: true_aggregate,
+        description: description,
+        inserted_at: inserted_at
+      } ->
+        send(
+          other_node,
+          {__MODULE__, self(),
+           {:aggregate_info,
+            {:ok,
+             %{aggregate: true_aggregate, description: description, inserted_at: inserted_at}}}}
+        )
     end
+
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info({:ping, other_node}, state) do
+    send(other_node, {__MODULE__, self(), :pong})
+
+    {:noreply, state}
   end
 end
