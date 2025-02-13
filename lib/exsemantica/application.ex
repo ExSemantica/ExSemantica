@@ -19,7 +19,8 @@ defmodule Exsemantica.Application do
       # Start to serve requests, typically the last entry
       ExsemanticaWeb.Endpoint,
       {Cluster.Supervisor,
-       [Application.get_env(:libcluster, :topologies), [name: Exsemantica.ClusterSupervisor]]}
+       [Application.get_env(:libcluster, :topologies), [name: Exsemantica.ClusterSupervisor]]},
+      Exsemantica.Gateway
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
