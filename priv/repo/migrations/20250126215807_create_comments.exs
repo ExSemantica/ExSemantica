@@ -3,10 +3,10 @@ defmodule Exsemantica.Repo.Migrations.CreateComments do
 
   def change do
     create table(:comments) do
-      add :hidden, :boolean, default: false, null: false
-      add :contents, :text
-      add :user_id, :id
-      add :post_id, :id
+      add :hidden, :boolean, null: false
+      add :contents, :text, null: false
+      add :user_id, :id, null: false
+      add :post_id, :id, null: false
       add :parent_id, :id
       add :replies, {:array, :id}
       add :votes, {:array, :id}

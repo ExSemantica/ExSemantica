@@ -3,11 +3,17 @@ defmodule Exsemantica.Repo.Migrations.CreateUsers do
 
   def change do
     create table(:users) do
-      add :hidden, :boolean, default: false, null: false
-      add :username, :string
+      add :hidden, :boolean, null: false
+      add :username, :string, null: false
+      add :extname, :string, null: false
       add :biography, :text
-      add :email, :string
-      add :password, :string
+      add :email, :string, null: false
+      add :password, :string, null: false
+
+      add :banned?, :boolean, null: false
+      add :banned_expire, :utc_datetime
+      add :banned_reason, :string, null: false
+
       add :posts, {:array, :id}
       add :comments, {:array, :id}
       add :comment_votes, {:array, :id}

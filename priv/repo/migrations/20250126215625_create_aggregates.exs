@@ -3,9 +3,11 @@ defmodule Exsemantica.Repo.Migrations.CreateAggregates do
 
   def change do
     create table(:aggregates) do
-      add :hidden, :boolean, default: false, null: false
-      add :name, :string
-      add :description, :text
+      add :hidden?, :boolean, null: false
+      add :hidden_reason, :string, null: false
+      add :name, :string, null: false
+      add :description, :text, null: false
+      add :description_modified, :utc_datetime, null: false
       add :posts, {:array, :id}
       add :tags, {:array, :string}
 

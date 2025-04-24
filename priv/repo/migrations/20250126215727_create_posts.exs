@@ -3,12 +3,12 @@ defmodule Exsemantica.Repo.Migrations.CreatePosts do
 
   def change do
     create table(:posts) do
-      add :hidden, :boolean, default: false, null: false
-      add :type, :string
-      add :title, :string
+      add :hidden, :boolean, null: false
+      add :type, :string, null: false
+      add :title, :string, null: false
       add :contents, :text
-      add :user_id, :id
-      add :aggregate_id, :id
+      add :user_id, :id, null: false
+      add :aggregate_id, :id, null: false
       add :votes, {:array, :id}
       add :comments, {:array, :id}
       add :tags, {:array, :string}

@@ -6,11 +6,15 @@ defmodule Exsemantica.Repo.User do
   import Ecto.Changeset
 
   schema "users" do
-    field(:hidden, :boolean, default: false)
     field(:username, :string)
+    field(:extname, :string)
     field(:password, :string, redact: true)
     field(:biography, :string)
     field(:email, :string)
+
+    field(:banned?, :boolean, default: false)
+    field(:banned_expire, :utc_datetime)
+    field(:banned_reason, :string, default: "No reason given")
 
     has_many(:posts, Exsemantica.Repo.Post, foreign_key: :user_id)
     has_many(:comments, Exsemantica.Repo.Comment, foreign_key: :user_id)
@@ -28,24 +32,29 @@ defmodule Exsemantica.Repo.User do
   def changeset(user, attrs) do
     user
     |> cast(attrs, [
-      :hidden,
       :username,
+      :extname,
       :biography,
       :email,
       :password,
       :subscriptions,
-      :aggregates
+      :aggregates,
+      :banned?,
+      :banned_expire,
+      :banned_reason
     ])
     |> validate_required([
-      :hidden,
       :username,
-      :biography,
+      :extname,
       :email,
       :password,
       :subscriptions,
       :aggregates
     ])
     |> validate_length(:username, min: 1, max: 15)
+    |> validate_length(:extname, min: 1, max: 63)
+    |> validate_length(:banned_reason, min: 1, max: 255)
+    |> validate_length(:biography, min: 0, max: 1023)
     |> validate_exclusion(:username, ~w(Services))
     |> validate_format(:username, ~r/^[0-9A-Za-z_]+$/)
     |> unique_constraint(:email)

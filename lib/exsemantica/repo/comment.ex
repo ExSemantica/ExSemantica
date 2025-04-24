@@ -25,6 +25,6 @@ defmodule Exsemantica.Repo.Comment do
     comment
     |> cast(attrs, [:contents, :hidden, :user, :post, :parent, :replies, :votes])
     |> validate_length(:content, min: 1, max: 4095)
-    |> validate_required([:contents, :hidden, :user, :post, :parent, :replies, :votes])
+    |> validate_required([:contents, :hidden, :user, :post, :replies, :votes])
   end
 end

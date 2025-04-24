@@ -7,7 +7,7 @@ defmodule ExsemanticaWeb.Endpoint do
   @session_options [
     store: :cookie,
     key: "_exsemantica_key",
-    signing_salt: "UkDPQdRm",
+    signing_salt: "DbqyTR2a",
     same_site: "Lax"
   ]
 
@@ -15,7 +15,12 @@ defmodule ExsemanticaWeb.Endpoint do
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
 
-  # Serve at "/" the static files from "priv/static" directory.
+  # Connect something here for Sencha chat
+  socket "/chat/socket", ExsemanticaWeb.ChatSocket,
+    websocket: true,
+    longpoll: false
+
+# Serve at "/" the static files from "priv/static" directory.
   #
   # You should set gzip to true if you are running phx.digest
   # when deploying your static files in production.

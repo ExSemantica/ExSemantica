@@ -7,6 +7,11 @@ defmodule Exsemantica.Application do
 
   @impl true
   def start(_type, _args) do
+    topologies = Application.get_env(:libcluster, :topologies)
+
+    Exsemantica.IRCBridging.rehash()
+    Exsemantica.ApplicationInfo.refresh()
+
     children = [
       ExsemanticaWeb.Telemetry,
       Exsemantica.Repo,
@@ -16,12 +21,18 @@ defmodule Exsemantica.Application do
       {Finch, name: Exsemantica.Finch},
       # Start a worker by calling: Exsemantica.Worker.start_link(arg)
       # {Exsemantica.Worker, arg},
+      ExsemanticaWeb.ChatPresence,
       # Start to serve requests, typically the last entry
-      ExsemanticaWeb.Endpoint,
-      {Cluster.Supervisor,
-       [Application.get_env(:libcluster, :topologies), [name: Exsemantica.ClusterSupervisor]]},
-      Exsemantica.Gateway
+      ExsemanticaWeb.Endpoint
     ]
+
+    # Check if clustering topologies are nil (usually the case in dev)
+    children =
+      if is_nil(topologies) do
+        children
+      else
+        [{Cluster.Supervisor, [topologies, [name: Exsemantica.ClusterSupervisor]]} | children]
+      end
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

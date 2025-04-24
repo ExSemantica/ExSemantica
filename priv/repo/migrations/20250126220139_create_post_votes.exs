@@ -3,9 +3,9 @@ defmodule Exsemantica.Repo.Migrations.CreatePostVotes do
 
   def change do
     create table(:post_votes) do
-      add :is_downvote, :boolean, default: false, null: false
-      add :post_id, :id
-      add :user_id, :id
+      add :is_downvote, :boolean, null: false
+      add :post_id, :id, null: false
+      add :user_id, :id, null: false
 
       timestamps(type: :utc_datetime)
     end
