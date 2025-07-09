@@ -9,7 +9,7 @@ defmodule Exsemantica.Application do
   def start(_type, _args) do
     topologies = Application.get_env(:libcluster, :topologies)
 
-    Exsemantica.IRCBridging.rehash()
+    Exsemantica.IRC.Bridging.rehash()
     Exsemantica.ApplicationInfo.refresh()
 
     children = [
@@ -23,7 +23,9 @@ defmodule Exsemantica.Application do
       # {Exsemantica.Worker, arg},
       ExsemanticaWeb.ChatPresence,
       # Start to serve requests, typically the last entry
-      ExsemanticaWeb.Endpoint
+      ExsemanticaWeb.Endpoint,
+
+      {Exsemantica.IRC.UserSupervisor, %{max_children: 512}}
     ]
 
     # Check if clustering topologies are nil (usually the case in dev)

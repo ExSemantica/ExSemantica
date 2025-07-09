@@ -1,4 +1,4 @@
-defmodule Exsemantica.IRCBridging do
+defmodule Exsemantica.IRC.Bridging do
   @moduledoc """
   IRC bridge numerics, automatically parsed out...
   """

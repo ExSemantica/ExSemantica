@@ -94,7 +94,7 @@ defmodule ExsemanticaWeb.ChatChannel do
     numerics
     # We need to parse the numerics, then make the multiline numeric results
     # into one flat multiline document
-    |> Enum.flat_map(&Exsemantica.IRCBridging.handle(&1, irc_compat))
+    |> Enum.flat_map(&Exsemantica.IRC.Bridging.handle(&1, irc_compat))
 
     # After this it is up to the server to send these one line at a time!
   end
