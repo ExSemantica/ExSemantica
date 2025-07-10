@@ -2,19 +2,7 @@ defmodule Exsemantica.IRC.Bridging do
   @moduledoc """
   IRC bridge numerics, automatically parsed out...
   """
-  def rehash() do
-    # rehash MOTD
-    motd =
-      File.read!(
-        Path.join([
-          :code.priv_dir(:exsemantica) |> to_string,
-          "motd.txt"
-        ])
-      )
-      |> String.split("\n")
 
-    :persistent_term.put(__MODULE__.MOTD, motd)
-  end
 
   def handle(:RPL_WELCOME, data) do
     [":#{data.source} 001 #{data.client} :Welcome to ExSemantica chat, #{data.client}"]

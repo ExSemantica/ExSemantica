@@ -3,11 +3,33 @@ defmodule Exsemantica.IRC.User do
   Structure to store connection/user data.
   """
 
+  @enforce_keys [:id, :state, :nickname, :capabilities, :sasl_data]
+  defstruct [:id, :state, :nickname, :capability_version, :capabilities, :sasl_data, :user_process]
+
   @doc """
   Gets the time-to-live of a chat account token.
   """
   def get_ttl_seconds(), do: 60 * 5
 
-  @enforce_keys [:state]
-  defstruct [:id, :state, :capability_version]
+  @doc """
+  Gets the maximum length of an IRC base36 ID.
+  """
+  def get_max_id36_len(), do: 16
+
+  @doc """
+  Constructs a hostmask iolist.
+  """
+  def construct_hostmask(%{id: id, nickname: nickname}) do
+    id_mask = Integer.to_string(id, 36)
+
+    # TODO: add more cloaks later, maybe
+    [
+      nickname,
+      "!~",
+      String.duplicate("0", get_max_id36_len() - byte_size(id_mask) - 1),
+      id_mask,
+      "@user/",
+      nickname
+    ]
+  end
 end

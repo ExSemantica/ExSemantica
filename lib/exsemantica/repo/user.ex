@@ -6,6 +6,7 @@ defmodule Exsemantica.Repo.User do
   import Ecto.Changeset
 
   schema "users" do
+    field(:hidden, :boolean, default: false)
     field(:username, :string)
     field(:extname, :string)
     field(:password, :string, redact: true)

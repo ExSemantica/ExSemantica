@@ -8,6 +8,11 @@ defmodule Exsemantica.IRC.Message do
   @doc """
   Encodes an outgoing IRC command into an iolist.
   """
+  def encode(remap = %__MODULE__{command: numeric}) when is_integer(numeric) do
+    # numerics get made into a string and padded with zeros
+    encode(%__MODULE__{remap | command: numeric |> to_string() |> String.pad_leading(3, "0")})
+  end
+
   def encode(
         remap = %__MODULE__{prefix: _prefix, command: _command, params: nil, trailing: _trailing}
       ) do
@@ -31,11 +36,11 @@ defmodule Exsemantica.IRC.Message do
   end
 
   def encode(%__MODULE__{prefix: nil, command: command, params: params, trailing: nil}) do
-    [command, params |> Enum.intersperse(" "), "\r\n"]
+    [command, " ", params |> Enum.intersperse(" "), "\r\n"]
   end
 
   def encode(%__MODULE__{prefix: nil, command: command, params: params, trailing: trailing}) do
-    [command, params |> Enum.intersperse(" "), " :", trailing, "\r\n"]
+    [command, " ", params |> Enum.intersperse(" "), " :", trailing, "\r\n"]
   end
 
   def encode(%__MODULE__{prefix: prefix, command: command, params: params, trailing: nil}) do

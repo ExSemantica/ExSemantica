@@ -36,7 +36,12 @@ defmodule ExsemanticaWeb.ChatSocket do
   # performing token verification on connect.
   @impl true
   def connect(%{"token" => token}, socket, _connect_info) do
-    case Phoenix.Token.verify(socket, "user_data", token, {:max_age, Exsemantica.IRC.User.get_ttl_seconds}) do
+    case Phoenix.Token.verify(
+           socket,
+           "user_data",
+           token,
+           {:max_age, Exsemantica.IRC.User.get_ttl_seconds()}
+         ) do
       {:ok, user_id} ->
         socket = assign(socket, :chat_user, Exsemantica.Repo.get!(Exsemantica.Repo.User, user_id))
 
