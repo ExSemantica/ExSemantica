@@ -15,6 +15,7 @@ defmodule Exsemantica.IRC.UserProcess do
     GenServer.start_link(__MODULE__, args, name: {:global, {__MODULE__, id}})
   end
 
+  @impl true
   def init(process_args = %{id: id, handle: handle, connection: connection}) do
     case connection do
       {:tcp, tcp_pid} ->
@@ -31,15 +32,24 @@ defmodule Exsemantica.IRC.UserProcess do
           timeout: nil
         }
 
-        [1, 2, 3, 4, 5, 375, 372, 376]
-        |> Enum.map(&Exsemantica.IRC.Numerics.handle(state, &1))
-        |> List.flatten()
-        |> Enum.map(&send(tcp_pid, {:send_message, &1}))
+        # HACK: bypass race condition with Supervisor.count_children
+        send(self(), :welcome_burst)
 
         {:ok, state}
     end
   end
 
+  @impl true
+  def handle_info(:welcome_burst, state = %{connection: {:tcp, tcp_pid}}) do
+    [1, 2, 3, 4, 5, 251, 255, 375, 372, 376]
+    |> Enum.map(&Exsemantica.IRC.Numerics.handle(state, &1))
+    |> List.flatten()
+    |> Enum.map(&send(tcp_pid, {:send_message, &1}))
+
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_info(:tcp_send_ping, state = %{connection: {:tcp, tcp_pid}}) do
     token =
       ["T", DateTime.utc_now() |> DateTime.to_unix() |> to_string()] |> IO.iodata_to_binary()
@@ -48,6 +58,7 @@ defmodule Exsemantica.IRC.UserProcess do
       tcp_pid,
       {:send_message,
        %Exsemantica.IRC.Message{
+         prefix: ExsemanticaWeb.Endpoint.host(),
          command: "PING",
          params: [token]
        }}
@@ -61,6 +72,27 @@ defmodule Exsemantica.IRC.UserProcess do
      }}
   end
 
+  @impl true
+  def handle_info(
+        {:recv_message, %Exsemantica.IRC.Message{command: "PING", params: [token]}},
+        state = %{connection: {:tcp, tcp_pid}}
+      ) do
+    source = ExsemanticaWeb.Endpoint.host()
+
+    send(
+      tcp_pid,
+      {:send_message,
+       %Exsemantica.IRC.Message{
+         prefix: source,
+         command: "PONG",
+         params: [source, token]
+       }}
+    )
+
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_info(
         {:recv_message, %Exsemantica.IRC.Message{command: "PONG", params: [token]}},
         state = %{ping: ping, timeout: timeout, last_ping_token: token_last}
@@ -78,6 +110,7 @@ defmodule Exsemantica.IRC.UserProcess do
      }}
   end
 
+  @impl true
   def handle_info(:tcp_do_timeout, state = %{connection: {:tcp, tcp_pid}, last_ping: last_ping}) do
     timed_out_at = DateTime.utc_now() |> DateTime.to_unix()
     timed_out = ["Ping timeout: ", (timed_out_at - last_ping) |> to_string(), " seconds"]
@@ -94,6 +127,7 @@ defmodule Exsemantica.IRC.UserProcess do
     {:stop, :normal, state}
   end
 
+  @impl true
   def handle_info({:recv_message, malformed}, state) do
     Logger.debug("Malformed message received", irc_data: malformed)
 

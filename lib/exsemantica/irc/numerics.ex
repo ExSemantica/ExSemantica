@@ -10,6 +10,9 @@ defmodule Exsemantica.IRC.Numerics do
     RPL_CREATED: 3,
     RPL_MYINFO: 4,
     RPL_ISUPPORT: 5,
+    RPL_UMODEIS: 221,
+    RPL_LUSERCLIENT: 251,
+    RPL_LUSERME: 255,
     RPL_MOTD: 372,
     RPL_MOTDSTART: 375,
     RPL_ENDOFMOTD: 376,
@@ -40,6 +43,10 @@ defmodule Exsemantica.IRC.Numerics do
 
   def handle(user, numeric) when numeric >= 900 and numeric < 909 do
     __MODULE__.SASL.handle(user, numeric)
+  end
+
+  def handle(user, numeric) when numeric in [251, 255] do
+    __MODULE__.LUsers.handle(user, numeric)
   end
 
   def handle(user, numeric) when numeric in [372, 375, 376] do

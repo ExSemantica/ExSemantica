@@ -48,7 +48,10 @@ defmodule Exsemantica.IRC.Handler do
   # Send packet(s) handling
   # ===========================================================================
   @impl GenServer
-  def handle_info({:send_message, msg}, {socket, state = %Exsemantica.IRC.User{state: :connected}}) do
+  def handle_info(
+        {:send_message, msg},
+        {socket, state = %Exsemantica.IRC.User{state: :connected}}
+      ) do
     socket
     |> send_struct(msg)
 
@@ -164,8 +167,11 @@ defmodule Exsemantica.IRC.Handler do
   end
 
   @impl GenServer
-  def handle_info({:recv_message, %Exsemantica.IRC.Message{command: command}}, {socket, state})
-      when command in ["NICK", "USER", "PASS"] do
+  def handle_info(
+        {:recv_message, %Exsemantica.IRC.Message{command: command}},
+        {socket, state = %Exsemantica.IRC.User{state: user_state}}
+      )
+      when command in ["NICK", "USER", "PASS"] and user_state != :connected do
     {:noreply, {socket, state}, socket.read_timeout}
   end
 
@@ -192,6 +198,7 @@ defmodule Exsemantica.IRC.Handler do
 
   @impl ThousandIsland.Handler
   def handle_shutdown(socket, _state) do
+    # This is called when `:init.stop()` is called
     socket
     |> send_struct(Exsemantica.IRC.Message.encode_shutdown())
 

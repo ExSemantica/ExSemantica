@@ -1,5 +1,5 @@
 defmodule Exsemantica.IRC.Numerics.Welcome do
-  def handle(user = %{nickname: nickname}, numeric = 1) do
+  def handle(%{nickname: nickname}, numeric = 1) do
     [
       %Exsemantica.IRC.Message{
         prefix: ExsemanticaWeb.Endpoint.host(),
@@ -7,7 +7,7 @@ defmodule Exsemantica.IRC.Numerics.Welcome do
         params: [nickname],
         trailing: [
           "Welcome to ExSemantica chat, ",
-          user |> Exsemantica.IRC.User.construct_hostmask()
+          nickname
         ]
       }
     ]

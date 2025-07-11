@@ -19,7 +19,17 @@ defmodule Exsemantica.IRC.UserSupervisor do
     DynamicSupervisor.init(max_children: max_children)
   end
 
+  @doc """
+  Tries to start a user process.
+  """
   def start_child(args) do
     DynamicSupervisor.start_child(__MODULE__, {Exsemantica.IRC.UserProcess, args})
+  end
+
+  @doc """
+  Shows how many user process there are.
+  """
+  def count_children() do
+    Supervisor.count_children(__MODULE__)
   end
 end
