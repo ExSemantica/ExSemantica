@@ -11,9 +11,32 @@ defmodule Exsemantica.IRC.UserProcess do
   @ping_timeout_milliseconds 5000
   @ping_milliseconds 60000 - @ping_timeout_milliseconds
 
+  @doc """
+  Starts this process given a user ID in the users table, their handle, and
+  socket tuple.
+
+  TODO: Make the "socket tuple" better documented.
+  """
   def start_link(args = %{id: id}) do
     GenServer.start_link(__MODULE__, args, name: {:global, {__MODULE__, id}})
   end
+
+  def force_disconnect(id, reason) do
+    GenServer.cast({:global, {__MODULE__, id}}, {:force_disconnect, reason})
+  end
+
+  # ===========================================================================
+
+  @impl true
+  def handle_cast({:force_disconnect, reason}, state) do
+    killed = ["Killed (", reason, ")"]
+
+    send(self(), {:disconnect, killed})
+
+    {:noreply, state}
+  end
+
+  # ===========================================================================
 
   @impl true
   def init(process_args = %{id: id, handle: handle, connection: connection}) do
@@ -111,20 +134,13 @@ defmodule Exsemantica.IRC.UserProcess do
   end
 
   @impl true
-  def handle_info(:tcp_do_timeout, state = %{connection: {:tcp, tcp_pid}, last_ping: last_ping}) do
+  def handle_info(:tcp_do_timeout, state = %{last_ping: last_ping}) do
     timed_out_at = DateTime.utc_now() |> DateTime.to_unix()
     timed_out = ["Ping timeout: ", (timed_out_at - last_ping) |> to_string(), " seconds"]
 
-    send(
-      tcp_pid,
-      {:send_message,
-       %Exsemantica.IRC.Message{
-         command: "ERROR",
-         trailing: Exsemantica.IRC.Message.encode_quit_reason(timed_out)
-       }}
-    )
+    send(self(), {:disconnect, timed_out})
 
-    {:stop, :normal, state}
+    {:noreply, state}
   end
 
   @impl true
@@ -132,5 +148,19 @@ defmodule Exsemantica.IRC.UserProcess do
     Logger.debug("Malformed message received", irc_data: malformed)
 
     {:noreply, state}
+  end
+
+  @impl true
+  def handle_info({:disconnect, reason}, state = %{connection: {:tcp, tcp_pid}}) do
+    send(
+      tcp_pid,
+      {:send_message,
+       %Exsemantica.IRC.Message{
+         command: "ERROR",
+         trailing: Exsemantica.IRC.Message.encode_quit_reason(reason)
+       }}
+    )
+
+    {:stop, :normal, state}
   end
 end

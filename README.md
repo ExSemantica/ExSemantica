@@ -29,13 +29,11 @@ $ iex -S mix
 Create the example user
 
 ```elixir
-iex> Exsemantica.Administration.User.create("example", "test_password", "user@example.com", "I'm a tester")
+iex> Exsemantica.Administration.User.create("example", "Example User", "test_password", "user@example.com", "I'm a test user and this is my biography.")
 ```
 
-If the JSON response's `e` is `"OK"`, then you have successfully logged in and that token is valid.
+More information should be added here.
 
 ### Deploying
 
 TODO
-
-[eactivitypub]: https://github.com/Chlorophytus/eactivitypub-legacy-0.2
