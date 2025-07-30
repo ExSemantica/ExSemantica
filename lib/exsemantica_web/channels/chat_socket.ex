@@ -40,7 +40,7 @@ defmodule ExsemanticaWeb.ChatSocket do
            socket,
            "user_data",
            token,
-           {:max_age, Exsemantica.IRC.User.get_ttl_seconds()}
+           {:max_age, Exsemantica.IRC.User.ttl_seconds()}
          ) do
       {:ok, user_id} ->
         socket = assign(socket, :chat_user, Exsemantica.Repo.get!(Exsemantica.Repo.User, user_id))

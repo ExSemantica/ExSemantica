@@ -71,22 +71,15 @@ defmodule Exsemantica.IRC.Numerics.Welcome do
   end
 
   def handle(%{nickname: nickname}, numeric = 5) do
-    [
+    Exsemantica.IRC.get_parameters()
+    |> Enum.chunk_every(13)
+    |> Enum.map(fn parameters_chunk ->
       %Exsemantica.IRC.Message{
         prefix: ExsemanticaWeb.Endpoint.host(),
         command: numeric,
-        params: [
-          nickname,
-          "CASEMAPPING=ascii",
-          "CHANMODES=b",
-          # TODO: channel length is a magic number, FIXME
-          "CHANNELLEN=31",
-          "CHANTYPES=#",
-          "PREFIX=@",
-          ["USERLEN=", Exsemantica.IRC.User.get_max_id36_len() |> to_string]
-        ],
+        params: [nickname | parameters_chunk],
         trailing: "are supported by this server"
       }
-    ]
+    end)
   end
 end

@@ -9,12 +9,12 @@ defmodule Exsemantica.IRC.User do
   @doc """
   Gets the time-to-live of a chat account token.
   """
-  def get_ttl_seconds(), do: 60 * 5
+  def ttl_seconds(), do: 60 * 5
 
   @doc """
   Gets the maximum length of an IRC base36 ID.
   """
-  def get_max_id36_len(), do: 16
+  def max_id36_len(), do: 16
 
   @doc """
   Constructs a hostmask iolist.
@@ -26,7 +26,7 @@ defmodule Exsemantica.IRC.User do
     [
       nickname,
       "!~",
-      String.duplicate("0", get_max_id36_len() - byte_size(id_mask) - 1),
+      String.duplicate("0", max_id36_len() - byte_size(id_mask) - 1),
       id_mask,
       "@user/",
       nickname

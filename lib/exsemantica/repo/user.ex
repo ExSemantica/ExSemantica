@@ -5,6 +5,9 @@ defmodule Exsemantica.Repo.User do
   use Ecto.Schema
   import Ecto.Changeset
 
+  def max_name_length(), do: 15
+  def max_extname_length(), do: 63
+
   schema "users" do
     field(:hidden, :boolean, default: false)
     field(:username, :string)
@@ -52,8 +55,8 @@ defmodule Exsemantica.Repo.User do
       :subscriptions,
       :aggregates
     ])
-    |> validate_length(:username, min: 1, max: 15)
-    |> validate_length(:extname, min: 1, max: 63)
+    |> validate_length(:username, min: 1, max: max_name_length())
+    |> validate_length(:extname, min: 1, max: max_extname_length())
     |> validate_length(:banned_reason, min: 1, max: 255)
     |> validate_length(:biography, min: 0, max: 1023)
     |> validate_exclusion(:username, ~w(Services))

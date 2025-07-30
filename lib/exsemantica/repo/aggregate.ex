@@ -5,6 +5,9 @@ defmodule Exsemantica.Repo.Aggregate do
   use Ecto.Schema
   import Ecto.Changeset
 
+  def max_name_length(), do: 31
+  def max_description_length(), do: 511
+
   schema "aggregates" do
     field(:hidden?, :boolean, default: false)
     field(:hidden_reason, :string, default: "No reason given")
@@ -47,9 +50,9 @@ defmodule Exsemantica.Repo.Aggregate do
       :subscriptions,
       :moderators
     ])
-    |> validate_length(:name, min: 1, max: 31)
+    |> validate_length(:name, min: 1, max: max_name_length())
     |> validate_length(:hidden_reason, min: 1, max: 255)
-    |> validate_length(:description, min: 1, max: 1023)
+    |> validate_length(:description, min: 1, max: max_description_length())
     |> validate_length(:tags, min: 0, max: 32)
     |> validate_exclusion(:name, ~w(Services))
     |> validate_format(:name, ~r/^[0-9A-Za-z_]+$/)
