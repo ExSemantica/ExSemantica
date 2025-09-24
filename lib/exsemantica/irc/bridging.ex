@@ -1,8 +1,9 @@
 defmodule Exsemantica.IRC.Bridging do
   @moduledoc """
   IRC bridge numerics, automatically parsed out...
-  """
 
+  TODO: Delete or refactor this since we are handling numerics differently.
+  """
 
   def handle(:RPL_WELCOME, data) do
     [":#{data.source} 001 #{data.client} :Welcome to ExSemantica chat, #{data.client}"]

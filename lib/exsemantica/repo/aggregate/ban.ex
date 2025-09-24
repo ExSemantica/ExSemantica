@@ -9,7 +9,7 @@ defmodule Exsemantica.Repo.Aggregate.Ban do
     belongs_to(:aggregate, Exsemantica.Repo.Aggregate, foreign_key: :aggregate_id)
     belongs_to(:moderator, Exsemantica.Repo.User, foreign_key: :moderator_id)
     belongs_to(:user, Exsemantica.Repo.User, foreign_key: :user_id)
-    
+
     timestamps(type: :utc_datetime)
   end
 

@@ -10,7 +10,7 @@ defmodule Exsemantica.Repo.Vote.Post do
 
     belongs_to(:post, Exsemantica.Repo.Post, foreign_key: :post_id)
     belongs_to(:user, Exsemantica.Repo.User, foreign_key: :user_id)
-    
+
     timestamps(type: :utc_datetime)
   end
 

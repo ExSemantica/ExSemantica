@@ -55,7 +55,10 @@ defmodule Exsemantica.Repo.Aggregate do
     |> validate_length(:description, min: 1, max: max_description_length())
     |> validate_length(:tags, min: 0, max: 32)
     |> validate_exclusion(:name, ~w(Services))
-    |> validate_format(:name, ~r/^[0-9A-Za-z_]+$/)
+    |> validate_format(
+      :name,
+      ~r/^[\x01-\x07\x08-\x09\x0b-\x0c\x03-\x1f\x21-\x2b\x2d-\x39\x3b-\xff]+$/
+    )
     |> unique_constraint(:name)
   end
 end

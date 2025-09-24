@@ -5,10 +5,8 @@ defmodule Exsemantica.Administration.Aggregate do
   import Ecto.Query
 
   def create(name, description, tags \\ []) do
-    {:ok, constrained} = name |> Exsemantica.Constrain.into_valid_aggregate()
-
     Exsemantica.Repo.insert(%Exsemantica.Repo.Aggregate{
-      name: constrained,
+      name: name,
       description: description,
       tags: tags
     })

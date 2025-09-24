@@ -24,7 +24,6 @@ defmodule Exsemantica.Application do
       ExsemanticaWeb.ChatPresence,
       # Start to serve requests, typically the last entry
       ExsemanticaWeb.Endpoint,
-
       {Exsemantica.IRC.UserSupervisor, %{max_children: 512}},
       {ThousandIsland, port: 6667, handler_module: Exsemantica.IRC.Handler}
     ]

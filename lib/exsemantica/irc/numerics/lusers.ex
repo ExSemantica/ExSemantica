@@ -11,9 +11,9 @@ defmodule Exsemantica.IRC.Numerics.LUsers do
         command: numeric,
         params: [nickname],
         trailing: [
-          "There are ",
-          active |> to_string(),
-          " user(s) and 0 invisible on 1 server"
+          "There ",
+          if(active == 1, do: "is 1 user", else: "are ${active} users"),
+          " on 1 server"
         ]
       }
     ]
@@ -29,8 +29,8 @@ defmodule Exsemantica.IRC.Numerics.LUsers do
         params: [nickname],
         trailing: [
           "I have ",
-          active |> to_string(),
-          " client(s) and 1 server(s)"
+          if(active == 1, do: "1 client", else: "${active} clients"),
+          " and 1 server"
         ]
       }
     ]

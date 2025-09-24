@@ -8,8 +8,8 @@ defmodule Exsemantica.IRC.UserProcess do
 
   require Logger
 
-  @ping_timeout_milliseconds 5000
-  @ping_milliseconds 60000 - @ping_timeout_milliseconds
+  @ping_timeout_milliseconds 5_000
+  @ping_milliseconds 60_000 - @ping_timeout_milliseconds
 
   @doc """
   Starts this process given a user ID in the users table, their handle, and
@@ -64,10 +64,14 @@ defmodule Exsemantica.IRC.UserProcess do
 
   @impl true
   def handle_info(:welcome_burst, state = %{connection: {:tcp, tcp_pid}}) do
-    [1, 2, 3, 4, 5, 251, 255, 375, 372, 376]
-    |> Enum.map(&Exsemantica.IRC.Numerics.handle(state, &1))
-    |> List.flatten()
-    |> Enum.map(&send(tcp_pid, {:send_message, &1}))
+    numerics =
+      [1, 2, 3, 4, 5, 251, 255, 375, 372, 376]
+      |> Enum.map(&Exsemantica.IRC.Numerics.handle(state, &1))
+      |> List.flatten()
+
+    for numeric <- numerics do
+      send(tcp_pid, {:send_message, numeric})
+    end
 
     {:noreply, state}
   end
@@ -160,6 +164,8 @@ defmodule Exsemantica.IRC.UserProcess do
          trailing: Exsemantica.IRC.Message.encode_quit_reason(reason)
        }}
     )
+
+    Logger.debug("User process disconnected (TCP) (#{reason})")
 
     {:stop, :normal, state}
   end

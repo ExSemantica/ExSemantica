@@ -31,14 +31,14 @@ defmodule Exsemantica.IRC do
     [
       "CASEMAPPING=ascii",
       "CHANMODES=b",
-      ["CHANNLIMIT=#:", channel_limit() |> to_string],
+      ["CHANLIMIT=#:", channel_limit() |> to_string],
       ["CHANNELLEN=", Exsemantica.Repo.Aggregate.max_name_length() |> to_string],
       "CHANTYPES=#",
       "NETWORK=ExSemantica",
       ["NICKLEN=", Exsemantica.Repo.User.max_name_length() |> to_string],
       "PREFIX=@",
       ["TOPICLEN=", Exsemantica.Repo.Aggregate.max_description_length() |> to_string],
-      ["USERLEN=", Exsemantica.IRC.User.max_id36_len() |> to_string],
+      ["USERLEN=", Exsemantica.IRC.User.max_id36_len() |> to_string]
     ]
   end
 end

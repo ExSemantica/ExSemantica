@@ -4,7 +4,15 @@ defmodule Exsemantica.IRC.User do
   """
 
   @enforce_keys [:id, :state, :nickname, :capabilities, :sasl_data]
-  defstruct [:id, :state, :nickname, :capability_version, :capabilities, :sasl_data, :user_process]
+  defstruct [
+    :id,
+    :state,
+    :nickname,
+    :capability_version,
+    :capabilities,
+    :sasl_data,
+    :user_process
+  ]
 
   @doc """
   Gets the time-to-live of a chat account token.

@@ -20,7 +20,7 @@ defmodule ExsemanticaWeb.Endpoint do
     websocket: true,
     longpoll: false
 
-# Serve at "/" the static files from "priv/static" directory.
+  # Serve at "/" the static files from "priv/static" directory.
   #
   # You should set gzip to true if you are running phx.digest
   # when deploying your static files in production.

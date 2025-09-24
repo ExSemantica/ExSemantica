@@ -60,7 +60,10 @@ defmodule Exsemantica.Repo.User do
     |> validate_length(:banned_reason, min: 1, max: 255)
     |> validate_length(:biography, min: 0, max: 1023)
     |> validate_exclusion(:username, ~w(Services))
-    |> validate_format(:username, ~r/^[0-9A-Za-z_]+$/)
+    |> validate_format(
+      :username,
+      ~r/^[A-Za-z\x5b-\x60\x7b-\x7d][0-9A-Za-z\-\x5b-\x60\x7b-\x7d]*$/
+    )
     |> unique_constraint(:email)
     |> unique_constraint(:username)
   end
