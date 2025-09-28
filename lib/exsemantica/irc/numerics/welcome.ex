@@ -63,8 +63,8 @@ defmodule Exsemantica.IRC.Numerics.Welcome do
           source,
           ["exsemantica-", Application.spec(:exsemantica, :vsn) |> to_string],
           "w",
-          "b",
-          "b"
+          "bi",
+          "bi"
         ]
       }
     ]

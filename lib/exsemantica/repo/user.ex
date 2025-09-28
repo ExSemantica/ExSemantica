@@ -62,7 +62,8 @@ defmodule Exsemantica.Repo.User do
     |> validate_exclusion(:username, ~w(Services))
     |> validate_format(
       :username,
-      ~r/^[A-Za-z\x5b-\x60\x7b-\x7d][0-9A-Za-z\-\x5b-\x60\x7b-\x7d]*$/
+      ~r/^[A-Za-z\x5b-\x60\x7b-\x7d][0-9A-Za-z\-\x5b-\x60\x7b-\x7d]*$/,
+      message: "must be an RFC2812-compliant nickname"
     )
     |> unique_constraint(:email)
     |> unique_constraint(:username)

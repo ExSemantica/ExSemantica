@@ -8,6 +8,7 @@ defmodule Exsemantica.Administration.Aggregate do
     Exsemantica.Repo.insert(%Exsemantica.Repo.Aggregate{
       name: name,
       description: description,
+      description_modified: DateTime.utc_now(:second),
       tags: tags
     })
   end

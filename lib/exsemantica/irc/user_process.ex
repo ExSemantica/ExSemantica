@@ -27,7 +27,7 @@ defmodule Exsemantica.IRC.UserProcess do
 
   # ===========================================================================
 
-  @impl true
+  @impl GenServer
   def handle_cast({:force_disconnect, reason}, state) do
     killed = ["Killed (", reason, ")"]
 
@@ -38,7 +38,7 @@ defmodule Exsemantica.IRC.UserProcess do
 
   # ===========================================================================
 
-  @impl true
+  @impl GenServer
   def init(process_args = %{id: id, handle: handle, connection: connection}) do
     case connection do
       {:tcp, tcp_pid} ->
@@ -62,7 +62,7 @@ defmodule Exsemantica.IRC.UserProcess do
     end
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:welcome_burst, state = %{connection: {:tcp, tcp_pid}}) do
     numerics =
       [1, 2, 3, 4, 5, 251, 255, 375, 372, 376]
@@ -76,7 +76,7 @@ defmodule Exsemantica.IRC.UserProcess do
     {:noreply, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(:tcp_send_ping, state = %{connection: {:tcp, tcp_pid}}) do
     token =
       ["T", DateTime.utc_now() |> DateTime.to_unix() |> to_string()] |> IO.iodata_to_binary()
@@ -99,7 +99,7 @@ defmodule Exsemantica.IRC.UserProcess do
      }}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(
         {:recv_message, %Exsemantica.IRC.Message{command: "PING", params: [token]}},
         state = %{connection: {:tcp, tcp_pid}}
@@ -119,7 +119,7 @@ defmodule Exsemantica.IRC.UserProcess do
     {:noreply, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info(
         {:recv_message, %Exsemantica.IRC.Message{command: "PONG", params: [token]}},
         state = %{ping: ping, timeout: timeout, last_ping_token: token_last}
@@ -137,7 +137,112 @@ defmodule Exsemantica.IRC.UserProcess do
      }}
   end
 
-  @impl true
+  @impl GenServer
+  def handle_info(
+        {:recv_message, %Exsemantica.IRC.Message{command: "JOIN", params: [which]}},
+        state = %{id: id, nickname: nickname, connection: {:tcp, tcp_pid}}
+      ) do
+    channels = which |> String.split(",")
+
+    for channel <- channels do
+      response = Exsemantica.IRC.ChannelStore.join(id, channel)
+
+      case response do
+        # TODO: Display expiry
+        {:error, {:banned, channel_name, _expiry, reason}} ->
+          send(
+            tcp_pid,
+            {:send_message,
+             Exsemantica.IRC.Numerics.handle(
+               %{state | channel: channel_name, reason: reason},
+               474
+             )}
+          )
+
+        {:error, {:already_present, channel_name}} ->
+          :dont_care
+
+        {:error, {:too_many_users, channel_name}} ->
+          send(
+            tcp_pid,
+            {:send_message,
+             Exsemantica.IRC.Numerics.handle(%{state | channel: channel_name}, 471)}
+          )
+
+        {:ok,
+         {:joined,
+          %Exsemantica.Repo.Aggregate{name: name, description: topic, description_modified: date},
+          users}} ->
+          send(
+            tcp_pid,
+            {:send_message,
+             %Exsemantica.IRC.Message{
+               prefix: ExsemanticaWeb.Endpoint.host(),
+               command: "JOIN",
+               params: [nickname, "#" <> name]
+             }}
+          )
+
+          numerics =
+            [332, 333, 353, 366]
+            |> Enum.map(
+              &Exsemantica.IRC.Numerics.handle(
+                state
+                |> Map.merge(%{channel: "#" <> name, topic: topic, date: date, users: users}),
+                &1
+              )
+            )
+            |> List.flatten()
+
+          for numeric <- numerics do
+            send(tcp_pid, {:send_message, numeric})
+          end
+      end
+    end
+
+    {:noreply, state}
+  end
+
+  @impl GenServer
+  def handle_info(
+        {:recv_message,
+         %Exsemantica.IRC.Message{command: "PART", params: [which], trailing: reason}},
+        state = %{id: id, nickname: nickname, connection: {:tcp, tcp_pid}}
+      ) do
+    channels = which |> String.split(",")
+
+    for channel <- channels do
+      response = Exsemantica.IRC.ChannelStore.part(id, channel, reason)
+
+      case response do
+        {:error, {:already_not_present, channel_name}} ->
+          send(
+            tcp_pid,
+            {:send_message,
+             Exsemantica.IRC.Numerics.handle(
+               %{state | channel: channel_name},
+               442
+             )}
+          )
+
+        {:ok, {:parted, %Exsemantica.Repo.Aggregate{name: name}}} ->
+          send(
+            tcp_pid,
+            {:send_message,
+             %Exsemantica.IRC.Message{
+               prefix: ExsemanticaWeb.Endpoint.host(),
+               command: "PART",
+               params: [nickname, "#" <> name],
+               trailing: reason
+             }}
+          )
+      end
+    end
+
+    {:noreply, state}
+  end
+
+  @impl GenServer
   def handle_info(:tcp_do_timeout, state = %{last_ping: last_ping}) do
     timed_out_at = DateTime.utc_now() |> DateTime.to_unix()
     timed_out = ["Ping timeout: ", (timed_out_at - last_ping) |> to_string(), " seconds"]
@@ -147,15 +252,15 @@ defmodule Exsemantica.IRC.UserProcess do
     {:noreply, state}
   end
 
-  @impl true
+  @impl GenServer
   def handle_info({:recv_message, malformed}, state) do
     Logger.debug("Malformed message received", irc_data: malformed)
 
     {:noreply, state}
   end
 
-  @impl true
-  def handle_info({:disconnect, reason}, state = %{connection: {:tcp, tcp_pid}}) do
+  @impl GenServer
+  def handle_info({:disconnect, reason}, state = %{id: id, connection: {:tcp, tcp_pid}}) do
     send(
       tcp_pid,
       {:send_message,
@@ -164,6 +269,8 @@ defmodule Exsemantica.IRC.UserProcess do
          trailing: Exsemantica.IRC.Message.encode_quit_reason(reason)
        }}
     )
+
+    Exsemantica.IRC.ChannelStore.disconnect(id, reason)
 
     Logger.debug("User process disconnected (TCP) (#{reason})")
 

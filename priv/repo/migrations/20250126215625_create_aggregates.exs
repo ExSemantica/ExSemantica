@@ -3,6 +3,7 @@ defmodule Exsemantica.Repo.Migrations.CreateAggregates do
 
   def change do
     create table(:aggregates) do
+      add :chat_limit, :integer, null: false
       add :hidden?, :boolean, null: false
       add :hidden_reason, :string, null: false
       add :name, :string, null: false
